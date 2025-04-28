@@ -1,11 +1,33 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Button, Dialog, DialogBody } from "@blueprintjs/core";
-import { TableEditor } from "../table/TableEditor";
 import { getTableURL } from "./table-to-svg";
+import TanStackTable from './tanstack-table';
+
+// Default data and columns
+const defaultData = [
+  { id: 1, name: 'John Doe', age: 30, email: 'john@example.com' },
+  { id: 2, name: 'Jane Smith', age: 25, email: 'jane@example.com' },
+  { id: 3, name: 'Bob Johnson', age: 35, email: 'bob@example.com' },
+];
+
+const defaultColumns = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+  },
+  {
+    accessorKey: 'age',
+    header: 'Age',
+  },
+  {
+    accessorKey: 'email',
+    header: 'Email',
+  },
+];
 
 export const SvgTableButton = ({ store, element }) => {
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   React.useEffect(() => {
     if (!element.custom?.isTable) {
@@ -28,12 +50,31 @@ export const SvgTableButton = ({ store, element }) => {
     return null;
   }
 
+  const handleOpen = () => {
+    // Initialize data if it doesn't exist
+    if (!element.custom?.state?.data) {
+      element.set({
+        custom: {
+          ...element.custom,
+          state: {
+            ...element.custom?.state,
+            data: defaultData,
+            columns: defaultColumns,
+            headerColor: element.custom?.state?.headerColor || "#e6f7ff",
+            rowColors: element.custom?.state?.rowColors || {},
+            columnColors: element.custom?.state?.columnColors || {},
+            cellColors: element.custom?.state?.cellColors || {}
+          }
+        }
+      });
+    }
+    setIsOpen(true);
+  };
+
   return (
     <>
       <Button
-        onClick={() => {
-          setIsOpen(true);
-        }}
+        onClick={handleOpen}
         minimal
       >
         Edit table
@@ -46,15 +87,14 @@ export const SvgTableButton = ({ store, element }) => {
         }}
       >
         <DialogBody>
-          <TableEditor
-            data={element.custom?.state.data}
-            columns={element.custom?.state.columns}
-            headerColor={element.custom?.state.headerColor || "#e6f7ff"}
-            rowColors={element.custom?.state.rowColors || {}}
-            columnColors={element.custom?.state.columnColors || {}}
-            cellColors={element.custom?.state.cellColors || {}}
+          <TanStackTable
+            data={element.custom?.state?.data || defaultData}
+            columns={element.custom?.state?.columns || defaultColumns}
+            headerColor={element.custom?.state?.headerColor || "#e6f7ff"}
+            rowColors={element.custom?.state?.rowColors || {}}
+            columnColors={element.custom?.state?.columnColors || {}}
+            cellColors={element.custom?.state?.cellColors || {}}
             onChange={(state) => {
-              // Ensure we preserve all styling information
               const updatedState = {
                 ...state,
                 headerColor: state.headerColor || element.custom.state.headerColor || "#e6f7ff",
