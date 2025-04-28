@@ -8,7 +8,7 @@ export const SvgTableButton = ({ store, element }) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   React.useEffect(() => {
-    if (!element.custom?.isTable) {
+    if (!element.custom?.isTable || isOpen) {
       return;
     }
     const { src, ratio } = getTableURL({

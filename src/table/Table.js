@@ -1,7 +1,7 @@
 "use client";
-import React, {useMemo} from "react";
+import React, {useMemo, useEffect, useRef} from "react";
 import clsx from "clsx";
-import {useTable, useFlexLayout, useResizeColumns, useSortBy} from "react-table";
+import {useTable, useBlockLayout, useResizeColumns, useSortBy} from "react-table";
 import Cell from "./Cell";
 import Header from "./Header";
 import PlusIcon from "./img/Plus";
@@ -64,10 +64,32 @@ export default function Table({
         cellColors
       }
     },
-    useFlexLayout,
+    useBlockLayout,
     useResizeColumns,
     useSortBy
   );
+
+  useEffect(() => {
+    const handleResize = (column) => {
+      if (column.originalWidth !== column.totalWidth) {
+        setTimeout(() => {
+          dataDispatch({
+            type: "update_column_width",
+            columnId: column.id,
+            width: column.totalWidth
+          });
+        }, 250);
+      }
+    };
+
+    headerGroups.forEach(headerGroup => {
+      headerGroup.headers.forEach(header => {
+        if (header.isResizing) {
+          handleResize(header);
+        }
+      });
+    });
+  }, [isTableResizing, dataDispatch]);
 
   function isTableResizing() {
     for (let headerGroup of headerGroups) {
@@ -85,7 +107,6 @@ export default function Table({
   const handleColorChange = (color) => {
     const selection = window.getSelection();
     if (selection && selection.toString()) {
-      // If there's text selected, update all cells containing selected text
       const range = selection.getRangeAt(0);
       const cells = document.querySelectorAll('.td-content');
       cells.forEach(cell => {
@@ -107,7 +128,7 @@ export default function Table({
 
   return (
     <div className="table-container" style={{ position: 'relative' }}>
-      <div {...getTableProps()} className={clsx("table", isTableResizing() && "noselect")}>
+      <div {...getTableProps()} className="table">
         <div>
           {headerGroups.map((headerGroup) => (
             <div {...headerGroup.getHeaderGroupProps()} className='tr'>

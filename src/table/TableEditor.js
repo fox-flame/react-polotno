@@ -31,8 +31,7 @@ function reducer(state, action) {
       const newColumns = [...state.columns];
       newColumns[columnIndex] = {
         ...newColumns[columnIndex],
-        width: action.width,
-        minWidth: action.width
+        width: action.width
       };
 
       return {
@@ -455,25 +454,6 @@ export function TableEditor({
             cellColors={state.cellColors}
           />
         </div>
-      </div>
-      <div
-        style={{
-          height: 140,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column"
-        }}
-      >
-        <p style={{ color: grey(600) }}>
-          Built by{" "}
-          <a
-            href="https://twitter.com/thesysarch"
-            style={{ color: grey(600), fontWeight: 600 }}
-          >
-            @thesysarch
-          </a>
-        </p>
       </div>
     </div>
   );

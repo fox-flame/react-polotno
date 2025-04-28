@@ -225,20 +225,24 @@ html {
 
 .resizer {
   display: inline-block;
-  background: transparent;
-  width: 8px;
+  background: black;
+  width: 3px;
   height: 100%;
   position: absolute;
   right: 0;
   top: 0;
   transform: translateX(50%);
   z-index: 1;
-  cursor: col-resize;
   touch-action: none;
+  cursor: col-resize;
 }
 
 .resizer:hover {
-  background-color: #8ecae6;
+  background: red;
+}
+
+.resizer.isResizing {
+  background: red;
 }
 
 .th,
@@ -248,6 +252,7 @@ html {
   border-bottom: 1px solid #e0e0e0;
   border-right: 1px solid #e0e0e0;
   position: relative;
+  overflow: hidden;
 }
 
 .text-align-right {
