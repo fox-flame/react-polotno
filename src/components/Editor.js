@@ -16,6 +16,9 @@ import { SvgTableButton } from "./table-button";
 import { ActionControls } from "./ActionControls";
 import { unstable_useHtmlTextRender } from "polotno/config";
 
+// Import our custom table components
+import "./custom-table";
+
 unstable_useHtmlTextRender(true);
 
 // create store
