@@ -25,6 +25,8 @@ const TableElement = observer(
       startPos: number;
       sizes: number[];
     } | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStartPos = useRef({ x: 0, y: 0 });
 
     // Calculate row heights and column widths
     const calculateTableDimensions = () => {
@@ -400,9 +402,39 @@ const TableElement = observer(
       return cells;
     };
 
+    const handleDragStart = (e: any) => {
+      setIsDragging(true);
+      const pos = e.target.getStage().getPointerPosition();
+      dragStartPos.current = {
+        x: pos.x - element.x,
+        y: pos.y - element.y
+      };
+      e.cancelBubble = true;
+    };
+
+    const handleDragMove = (e: any) => {
+      if (!isDragging) return;
+      const pos = e.target.getStage().getPointerPosition();
+      element.set({
+        x: pos.x - dragStartPos.current.x,
+        y: pos.y - dragStartPos.current.y
+      });
+    };
+
+    const handleDragEnd = () => {
+      setIsDragging(false);
+    };
+
     return (
       <>
-        <Group ref={groupRef}>
+        <Group
+          draggable={!editingCell}
+          onDragStart={handleDragStart}
+          onDragMove={handleDragMove}
+          onDragEnd={handleDragEnd}
+          x={element.x}
+          y={element.y}
+        >
           {renderCells()}
           {renderColumnResizers()}
           {renderRowResizers()}
