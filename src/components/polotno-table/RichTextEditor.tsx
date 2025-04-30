@@ -87,8 +87,9 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
       <Html
         divProps={{
           style: {
-            position: "absolute",
-            transform: `translate(${x}px, ${y}px)`,
+            position: "fixed",
+            left: x + 'px',
+            top: y + 'px',
             width: width + 'px',
             height: height + 'px',
             zIndex: 1000,
