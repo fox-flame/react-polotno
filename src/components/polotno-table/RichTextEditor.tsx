@@ -33,7 +33,7 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
       row,
       col,
     },
-    ref,
+    ref
   ) => {
     // Get cell style for the current cell
     const cellStyle = element.getCellStyle(row, col);
@@ -41,7 +41,7 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
     // Apply cell styles to the editor
     const getEditorStyle = () => {
       return {
-        position: "absolute",
+        position: 'absolute',
         left: `${x}px`,
         top: `${y}px`,
         width: `${width}px`,
@@ -92,10 +92,10 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
         divProps={{
           style: {
             position: "fixed",
-            left: x + "px",
-            top: y + "px",
-            width: width + "px",
-            height: height + "px",
+            left: x + 'px',
+            top: y + 'px',
+            width: width + 'px',
+            height: height + 'px',
             zIndex: 1000,
           },
         }}
@@ -120,9 +120,8 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
             resize: "none",
             overflow: "hidden",
             position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
+            top: 0,
+            left: 0,
             boxSizing: "border-box",
           }}
           onInput={handleChange}
@@ -131,7 +130,7 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
         />
       </Html>
     );
-  },
+  }
 );
 
 export default RichTextEditor;

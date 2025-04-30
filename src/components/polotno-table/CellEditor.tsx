@@ -45,29 +45,17 @@ const CellEditor = observer(
         ? element.rowHeights
         : Array(element.rows).fill(element.height / element.rows);
 
-      // Calculate cell position
-      let startX = 0;
-      let startY = 0;
-      
+      // Sum up widths and heights before this cell
       for (let i = 0; i < col; i++) {
-        startX += columnWidths[i];
+        x += columnWidths[i];
       }
       for (let i = 0; i < row; i++) {
-        startY += rowHeights[i];
+        y += rowHeights[i];
       }
 
-      // Calculate absolute position
-      const absX = startX + element.x;
-      const absY = startY + element.y;
-
-      // Apply transform
-      const scale = element.store?.scale || 1;
-      const stageX = element.store?.x || 0;
-      const stageY = element.store?.y || 0;
-
-      // Calculate final position with transform
-      x = absX * scale + stageX;
-      y = absY * scale + stageY;
+      // Adjust for element position and stage scale/position
+      x = (x + element.x) * scale + stagePos.x;
+      y = (y + element.y) * scale + stagePos.y;
 
       return {
         x,

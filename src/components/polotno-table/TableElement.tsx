@@ -449,17 +449,7 @@ const getColorBrightness = (color: string) => {
         <Group
           draggable={!editingCell}
           onDragStart={handleDragStart}
-          onDragMove={(e) => {
-            if (!isDragging) return;
-            const pos = e.target.getStage().getPointerPosition();
-            const dx = pos.x - dragStartPos.current.x;
-            const dy = pos.y - dragStartPos.current.y;
-            element.set({
-              x: element.x + dx,
-              y: element.y + dy
-            });
-            dragStartPos.current = pos;
-          }}
+          onDragMove={handleDragMove}
           onDragEnd={handleDragEnd}
           x={element.x}
           y={element.y}
