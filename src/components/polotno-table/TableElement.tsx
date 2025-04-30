@@ -448,7 +448,10 @@ const TableElement = observer(
               height={15}
               fill="rgba(0, 0, 0, 0.2)"
               cornerRadius={5}
-              onMouseDown={handleDragStart}
+              onMouseDown={(e) => {
+                store.selectElements([element]);
+                handleDragStart(e);
+              }}
               onMouseUp={handleDragEnd}
             />
             <Text
