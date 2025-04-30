@@ -29,16 +29,38 @@ const TableElement = observer(
     // Calculate row heights and column widths
     const calculateTableDimensions = () => {
       const { rows, columns, width, height } = element;
+      
+      // Use stored dimensions or default to equal distribution
+      let colWidths = element.columnWidths || Array(columns).fill(width / columns);
+      let rowHeights = element.rowHeights || Array(rows).fill(height / rows);
 
-      // Default to equal distribution
-      let colWidths = Array(columns).fill(width / columns);
-      let rowHeights = Array(rows).fill(height / rows);
+      // Ensure arrays match current dimensions
+      if (colWidths.length !== columns) {
+        const defaultWidth = width / columns;
+        colWidths = Array(columns).fill(defaultWidth);
+      }
+      if (rowHeights.length !== rows) {
+        const defaultHeight = height / rows;
+        rowHeights = Array(rows).fill(defaultHeight);
+      }
 
-      // Return dimensions
       return { colWidths, rowHeights };
     };
 
     const { colWidths, rowHeights } = calculateTableDimensions();
+
+    // Update dimensions when resizing
+    const updateDimensions = (type: 'column' | 'row', index: number, newSize: number) => {
+      const { columnWidths = [...colWidths], rowHeights = [...rowHeights] } = element;
+      
+      if (type === 'column') {
+        columnWidths[index] = Math.max(newSize, 20); // Minimum width of 20px
+        element.set({ columnWidths });
+      } else {
+        rowHeights[index] = Math.max(newSize, 20); // Minimum height of 20px
+        element.set({ rowHeights });
+      }
+    };
 
     // Handle mousedown on cell
     const handleCellClick = (row: number, col: number, e: any) => {
@@ -173,6 +195,10 @@ const TableElement = observer(
     };
 
     // Calculate cell position and dimensions
+    const getCellPadding = () => {
+      return element.cellPadding || 8; // Default padding of 8px
+    };
+
     const getCellProps = (row: number, col: number) => {
       let x = 0;
       for (let i = 0; i < col; i++) {
@@ -311,7 +337,7 @@ const TableElement = observer(
               <Rect
                 width={width}
                 height={height}
-                fill={backgroundColor}
+                fill={element.cellBackgrounds?.[`${row},${col}`] || backgroundColor}
                 stroke={borderColor}
                 strokeWidth={borderWidth}
                 perfectDrawEnabled={false}

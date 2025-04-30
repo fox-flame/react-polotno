@@ -41,6 +41,9 @@ unstable_registerShapeModel(
     ]),
     cellStyles: types.frozen({}),
     selectedCells: types.frozen([]),
+    columnWidths: types.frozen([]),
+    rowHeights: types.frozen([]),
+    cellBackgrounds: types.frozen({}),
   },
   // Extend function
   (self: any) => {
