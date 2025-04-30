@@ -38,7 +38,7 @@ export const handleAddTable = (store) => {
   if (!page) return;
 
   // Add a new table element with all required props
-  const element = page.addElement({
+  page.addElement({
     type: "table",
     x: 50, // Center the table on pointer
     y: 50,
