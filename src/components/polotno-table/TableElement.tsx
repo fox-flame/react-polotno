@@ -438,6 +438,30 @@ const TableElement = observer(
           {renderCells()}
           {renderColumnResizers()}
           {renderRowResizers()}
+          
+          {/* Bottom Center Drag Handle */}
+          <Group>
+            <Rect
+              x={element.width / 2 - 30}
+              y={element.height + 5}
+              width={60}
+              height={15}
+              fill="rgba(0, 0, 0, 0.2)"
+              cornerRadius={5}
+              onMouseDown={handleDragStart}
+              onMouseUp={handleDragEnd}
+            />
+            <Text
+              x={element.width / 2 - 30}
+              y={element.height + 8}
+              width={60}
+              height={15}
+              text="DRAG"
+              fontSize={10}
+              fill="white"
+              align="center"
+            />
+          </Group>
         </Group>
 
         {/* Cell Editor (appears when a cell is being edited) */}
