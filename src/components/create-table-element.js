@@ -37,11 +37,14 @@ export const handleAddTable = (store) => {
   const page = store.activePage;
   if (!page) return;
 
+  // Get pointer position for initial placement
+  const pointerPosition = store.activeStage?.getPointerPosition() || { x: 50, y: 50 };
+
   // Add a new table element with all required props
-  page.addElement({
+  const element = page.addElement({
     type: "table",
-    x: 50,
-    y: 50,
+    x: pointerPosition.x - 200, // Center the table on pointer
+    y: pointerPosition.y - 100,
     width: 400,
     height: 200,
     rows: 3,
@@ -57,5 +60,9 @@ export const handleAddTable = (store) => {
     ],
     cellStyles: {},
     selectedCells: [],
+    draggable: true,
   });
+
+  // Select the element for immediate dragging
+  store.selectElements([element]);
 };
