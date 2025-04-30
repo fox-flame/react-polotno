@@ -259,7 +259,7 @@ const TableElement = observer(
                 ? "#3B82F6"
                 : "transparent"
             }
-            strokeWidth={5}
+            strokeWidth={10}
             onMouseEnter={() => setHoveredResizer({ type: "column", index: i })}
             onMouseLeave={() => setHoveredResizer(null)}
             onMouseDown={(e) => handleResizerMouseDown("column", i, e)}
@@ -289,7 +289,7 @@ const TableElement = observer(
                 ? "#3B82F6"
                 : "transparent"
             }
-            strokeWidth={5}
+            strokeWidth={10}
             onMouseEnter={() => setHoveredResizer({ type: "row", index: i })}
             onMouseLeave={() => setHoveredResizer(null)}
             onMouseDown={(e) => handleResizerMouseDown("row", i, e)}
