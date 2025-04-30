@@ -336,6 +336,47 @@ const TableToolbar = observer(({ store }: { store: any }) => {
         <h3 className="text-xs uppercase text-gray-500 font-medium mb-2">
           Cell Styling
         </h3>
+        {element.selectedCells.length > 0 && (
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm text-gray-700 block mb-1">
+                Cell Background
+              </label>
+              <div className="flex items-center space-x-2">
+                <div
+                  className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
+                  style={{ 
+                    backgroundColor: element.selectedCells.length === 1 
+                      ? element.cellBackgrounds?.[element.selectedCells[0]] || '#ffffff'
+                      : '#ffffff' 
+                  }}
+                  onClick={() => {
+                    const newBackgrounds = { ...element.cellBackgrounds };
+                    element.selectedCells.forEach(cellKey => {
+                      newBackgrounds[cellKey] = element.selectedCells.length === 1
+                        ? undefined 
+                        : '#ffffff';
+                    });
+                    element.set({ cellBackgrounds: newBackgrounds });
+                  }}
+                />
+                <ColorPicker
+                  value={element.selectedCells.length === 1 
+                    ? element.cellBackgrounds?.[element.selectedCells[0]] || '#ffffff'
+                    : '#ffffff'}
+                  onChange={(color) => {
+                    const newBackgrounds = { ...element.cellBackgrounds };
+                    element.selectedCells.forEach(cellKey => {
+                      newBackgrounds[cellKey] = color;
+                    });
+                    element.set({ cellBackgrounds: newBackgrounds });
+                  }}
+                  store={store}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-3">
           <div>

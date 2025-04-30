@@ -12,6 +12,22 @@ const TableElement = observer(
     console.log("🚀 ~ element:", element);
     const groupRef = useRef(null);
     const [editingCell, setEditingCell] = useState<string | null>(null);
+
+const getColorBrightness = (color: string) => {
+  // For transparent, return 1 (light)
+  if (color === 'transparent') return 1;
+  
+  // Convert hex to RGB
+  const hex = color.replace('#', '');
+  const r = parseInt(hex.substr(0, 2), 16) / 255;
+  const g = parseInt(hex.substr(2, 2), 16) / 255;
+  const b = parseInt(hex.substr(4, 2), 16) / 255;
+  
+  // Calculate relative luminance
+  return 0.299 * r + 0.587 * g + 0.114 * b;
+};
+
+
     const [cellMeasurements, setCellMeasurements] = useState<{
       [key: string]: { width: number; height: number };
     }>({});
@@ -336,9 +352,12 @@ const TableElement = observer(
             ? element.getCellStyle(row, col)
             : (element.cellStyles && element.cellStyles[cellKey]) || {};
 
-          const backgroundColor =
-            cellStyle.backgroundColor || (isHeader ? "#f3f4f6" : "#ffffff");
-          const textColor = cellStyle.textColor || "#000000";
+          const backgroundColor = 
+            element.cellBackgrounds?.[cellKey] || 
+            cellStyle.backgroundColor || 
+            (isHeader ? "#f3f4f6" : "#ffffff");
+          const textColor = 
+            getColorBrightness(backgroundColor) > 0.5 ? "#000000" : "#ffffff";
           const fontWeight =
             cellStyle.fontWeight || (isHeader ? "bold" : "normal");
           const fontStyle = cellStyle.fontStyle || "normal";
