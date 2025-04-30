@@ -26,9 +26,13 @@ const CellEditor = observer(
 
     // Calculate position and size for the editor
     const calculateEditorPosition = () => {
-      const stage = element.getStage();
-      const scale = stage.scaleX();
-      const stagePos = stage.getAbsolutePosition();
+      if (!element.store) return { x: 0, y: 0, width: 0, height: 0 };
+      
+      const scale = element.store.scale;
+      const stagePos = { 
+        x: element.store.x || 0,
+        y: element.store.y || 0
+      };
 
       let x = 0;
       let y = 0;
