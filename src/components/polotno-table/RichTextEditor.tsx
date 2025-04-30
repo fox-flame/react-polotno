@@ -85,10 +85,11 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
 
     return (
       <Html
-        groupProps={{ x, y }}
         divProps={{
           style: {
-            position: "relative",
+            position: "absolute",
+            left: x + 'px',
+            top: y + 'px',
             zIndex: 1000,
           },
         }}

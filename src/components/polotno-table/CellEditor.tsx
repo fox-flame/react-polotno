@@ -72,8 +72,10 @@ const CellEditor = observer(
     }, []);
 
     return (
-      <Group x={x} y={y}>
+      <Group>
         <Rect
+          x={x}
+          y={y}
           width={width}
           height={height}
           fill="rgba(255, 255, 255, 0.95)"
@@ -82,10 +84,10 @@ const CellEditor = observer(
           cornerRadius={4}
         />
         <RichTextEditor
-          x={5}
-          y={5}
-          width={width - 10}
-          height={height - 10}
+          x={x}
+          y={y}
+          width={width}
+          height={height}
           initialText={initialText}
           onChange={setText}
           onBlur={handleBlur}
