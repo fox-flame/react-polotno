@@ -45,7 +45,7 @@ const CellEditor = observer(
         ? element.rowHeights
         : Array(element.rows).fill(element.height / element.rows);
 
-      // Sum up widths and heights before this cell
+      // Calculate cell position
       for (let i = 0; i < col; i++) {
         x += columnWidths[i];
       }
@@ -53,9 +53,10 @@ const CellEditor = observer(
         y += rowHeights[i];
       }
 
-      // Adjust for element position and stage scale/position
-      x = (x + element.x) * scale + stagePos.x;
-      y = (y + element.y) * scale + stagePos.y;
+      // Adjust for element position, stage scale/position, and cell padding
+      const padding = element.cellPadding || 8;
+      x = (x + element.x + padding) * scale + stagePos.x;
+      y = (y + element.y + padding) * scale + stagePos.y;
 
       return {
         x,
