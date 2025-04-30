@@ -1,0 +1,156 @@
+Failed to compile
+./src/components/polotno-table/TableElement.tsx
+Error: 
+  × the name `startPos` is defined multiple times
+     ╭─[/home/runner/workspace/src/components/polotno-table/TableElement.tsx:147:1]
+ 147 │       console.log("🚀 ~ handleResizerMouseDown ~ type:", type);
+ 148 │       e.cancelBubble = true;
+ 149 │       
+ 150 │       const startPos = type === 'column' ? e.evt.clientX : e.evt.clientY;
+     ·             ────┬───
+     ·                 ╰── previous definition of `startPos` here
+ 151 │       
+ 152 │       const handleMouseMove = (moveEvt: MouseEvent) => {
+ 153 │         const currentPos = type === 'column' ? moveEvt.clientX : moveEvt.clientY;
+ 154 │         const delta = currentPos - startPos;
+ 155 │         handleResize(type as 'column' | 'row', index, delta);
+ 156 │       };
+ 157 │       
+ 158 │       const handleMouseUp = () => {
+ 159 │         document.removeEventListener('mousemove', handleMouseMove);
+ 160 │         document.removeEventListener('mouseup', handleMouseUp);
+ 161 │       };
+ 162 │       
+ 163 │       document.addEventListener('mousemove', handleMouseMove);
+ 164 │       document.addEventListener('mouseup', handleMouseUp);
+ 165 │ 
+ 166 │       const startPos = type === "column" ? e.evt.clientX : e.evt.clientY;
+     ·             ────┬───
+     ·                 ╰── `startPos` redefined here
+ 167 │       const sizes = type === "column" ? [...colWidths] : [...rowHeights];
+ 168 │ 
+ 169 │       setResizing({
+     ╰────
+
+  × the name `handleMouseMove` is defined multiple times
+     ╭─[/home/runner/workspace/src/components/polotno-table/TableElement.tsx:149:1]
+ 149 │       
+ 150 │       const startPos = type === 'column' ? e.evt.clientX : e.evt.clientY;
+ 151 │       
+ 152 │       const handleMouseMove = (moveEvt: MouseEvent) => {
+     ·             ───────┬───────
+     ·                    ╰── previous definition of `handleMouseMove` here
+ 153 │         const currentPos = type === 'column' ? moveEvt.clientX : moveEvt.clientY;
+ 154 │         const delta = currentPos - startPos;
+ 155 │         handleResize(type as 'column' | 'row', index, delta);
+ 156 │       };
+ 157 │       
+ 158 │       const handleMouseUp = () => {
+ 159 │         document.removeEventListener('mousemove', handleMouseMove);
+ 160 │         document.removeEventListener('mouseup', handleMouseUp);
+ 161 │       };
+ 162 │       
+ 163 │       document.addEventListener('mousemove', handleMouseMove);
+ 164 │       document.addEventListener('mouseup', handleMouseUp);
+ 165 │ 
+ 166 │       const startPos = type === "column" ? e.evt.clientX : e.evt.clientY;
+ 167 │       const sizes = type === "column" ? [...colWidths] : [...rowHeights];
+ 168 │ 
+ 169 │       setResizing({
+ 170 │         type,
+ 171 │         index,
+ 172 │         startPos,
+ 173 │         sizes,
+ 174 │       });
+ 175 │ 
+ 176 │       const handleMouseMove = (moveEvt: MouseEvent) => {
+     ·             ───────┬───────
+     ·                    ╰── `handleMouseMove` redefined here
+ 177 │         if (!resizing) return;
+ 178 │ 
+ 179 │         const currentPos =
+     ╰────
+
+  × the name `handleMouseUp` is defined multiple times
+     ╭─[/home/runner/workspace/src/components/polotno-table/TableElement.tsx:155:1]
+ 155 │         handleResize(type as 'column' | 'row', index, delta);
+ 156 │       };
+ 157 │       
+ 158 │       const handleMouseUp = () => {
+     ·             ──────┬──────
+     ·                   ╰── previous definition of `handleMouseUp` here
+ 159 │         document.removeEventListener('mousemove', handleMouseMove);
+ 160 │         document.removeEventListener('mouseup', handleMouseUp);
+ 161 │       };
+ 162 │       
+ 163 │       document.addEventListener('mousemove', handleMouseMove);
+ 164 │       document.addEventListener('mouseup', handleMouseUp);
+ 165 │ 
+ 166 │       const startPos = type === "column" ? e.evt.clientX : e.evt.clientY;
+ 167 │       const sizes = type === "column" ? [...colWidths] : [...rowHeights];
+ 168 │ 
+ 169 │       setResizing({
+ 170 │         type,
+ 171 │         index,
+ 172 │         startPos,
+ 173 │         sizes,
+ 174 │       });
+ 175 │ 
+ 176 │       const handleMouseMove = (moveEvt: MouseEvent) => {
+ 177 │         if (!resizing) return;
+ 178 │ 
+ 179 │         const currentPos =
+ 180 │           type === "column" ? moveEvt.clientX : moveEvt.clientY;
+ 181 │         const delta = currentPos - startPos;
+ 182 │ 
+ 183 │         // Update sizes based on the delta
+ 184 │         const newSizes = [...sizes];
+ 185 │ 
+ 186 │         if (type === "column") {
+ 187 │           // Ensure we don't make columns too small
+ 188 │           const minColWidth = 20;
+ 189 │           const maxDelta = newSizes[index] - minColWidth;
+ 190 │           const safetyDelta = delta > 0 ? delta : Math.max(delta, -maxDelta);
+ 191 │ 
+ 192 │           newSizes[index] += safetyDelta;
+ 193 │           if (index < newSizes.length - 1) {
+ 194 │             // If not the last column, take space from the next column
+ 195 │             const nextMaxDelta = newSizes[index + 1] - minColWidth;
+ 196 │             const nextSafetyDelta =
+ 197 │               -safetyDelta > 0
+ 198 │                 ? -safetyDelta
+ 199 │                 : Math.max(-safetyDelta, -nextMaxDelta);
+ 200 │             newSizes[index + 1] -= safetyDelta;
+ 201 │           }
+ 202 │         } else {
+ 203 │           // Ensure we don't make rows too small
+ 204 │           const minRowHeight = 20;
+ 205 │           const maxDelta = newSizes[index] - minRowHeight;
+ 206 │           const safetyDelta = delta > 0 ? delta : Math.max(delta, -maxDelta);
+ 207 │ 
+ 208 │           newSizes[index] += safetyDelta;
+ 209 │           if (index < newSizes.length - 1) {
+ 210 │             // If not the last row, take space from the next row
+ 211 │             const nextMaxDelta = newSizes[index + 1] - minRowHeight;
+ 212 │             const nextSafetyDelta =
+ 213 │               -safetyDelta > 0
+ 214 │                 ? -safetyDelta
+ 215 │                 : Math.max(-safetyDelta, -nextMaxDelta);
+ 216 │             newSizes[index + 1] -= safetyDelta;
+ 217 │           }
+ 218 │         }
+ 219 │ 
+ 220 │         // Update the resizing state with the new sizes
+ 221 │         setResizing({
+ 222 │           ...resizing,
+ 223 │           sizes: newSizes,
+ 224 │         });
+ 225 │       };
+ 226 │ 
+ 227 │       const handleMouseUp = () => {
+     ·             ──────┬──────
+     ·                   ╰── `handleMouseUp` redefined here
+ 228 │         setResizing(null);
+ 229 │         document.removeEventListener("mousemove", handleMouseMove);
+ 230 │         document.removeEventListener("mouseup", handleMouseUp);
+     ╰────
