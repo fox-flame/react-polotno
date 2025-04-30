@@ -241,6 +241,7 @@ const TableElement = observer(
 
     // Render column resizers
     const renderColumnResizers = () => {
+      let totalHeight = rowHeights.reduce((sum, height) => sum + height, 0);
       return colWidths.map((width, i) => {
         let x = 0;
         for (let j = 0; j <= i; j++) {
@@ -253,7 +254,7 @@ const TableElement = observer(
         return (
           <Line
             key={`col-resizer-${i}`}
-            points={[x, 0, x, element.height]}
+            points={[x, 0, x, totalHeight]}
             stroke={
               hoveredResizer?.type === "column" && hoveredResizer?.index === i
                 ? "#3B82F6"
@@ -271,6 +272,7 @@ const TableElement = observer(
 
     // Render row resizers
     const renderRowResizers = () => {
+      let totalWidth = colWidths.reduce((sum, width) => sum + width, 0);
       return rowHeights.map((height, i) => {
         let y = 0;
         for (let j = 0; j <= i; j++) {
@@ -283,7 +285,7 @@ const TableElement = observer(
         return (
           <Line
             key={`row-resizer-${i}`}
-            points={[0, y, element.width, y]}
+            points={[0, y, totalWidth, y]}
             stroke={
               hoveredResizer?.type === "row" && hoveredResizer?.index === i
                 ? "#3B82F6"
