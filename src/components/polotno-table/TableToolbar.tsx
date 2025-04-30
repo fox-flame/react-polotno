@@ -648,4 +648,6 @@ const TableToolbar = observer(({ store }: { store: any }) => {
 
 export default TableToolbar;
 
-unstable_registerToolbarComponent("table", TableToolbar);
+unstable_registerToolbarComponent("table", TableToolbar as any);
+
+export default TableToolbar;

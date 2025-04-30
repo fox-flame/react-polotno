@@ -503,10 +503,10 @@ const getColorBrightness = (color: string) => {
           />
         )}
 
-        {/* Show the toolbar if any cell is selected */}
-        {/* {element.selectedCells && element.selectedCells.length > 0 && (
+        {/* Show the toolbar when element is selected */}
+        {store.selectedElements.includes(element) && (
           <TableToolbar element={element} store={store} />
-        )} */}
+        )}
       </>
     );
   }
