@@ -237,7 +237,7 @@ const TableElement = observer(
 
     // Render column resizers
     const renderColumnResizers = () => {
-      return colWidths.slice(0, -1).map((width, i) => {
+      return colWidths.map((width, i) => {
         let x = 0;
         for (let j = 0; j <= i; j++) {
           x +=
@@ -267,7 +267,7 @@ const TableElement = observer(
 
     // Render row resizers
     const renderRowResizers = () => {
-      return rowHeights.slice(0, -1).map((height, i) => {
+      return rowHeights.map((height, i) => {
         let y = 0;
         for (let j = 0; j <= i; j++) {
           y +=
