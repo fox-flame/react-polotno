@@ -148,24 +148,8 @@ const TableElement = observer(
       e.cancelBubble = true;
       
       const startPos = type === 'column' ? e.evt.clientX : e.evt.clientY;
-      
-      const handleMouseMove = (moveEvt: MouseEvent) => {
-        const currentPos = type === 'column' ? moveEvt.clientX : moveEvt.clientY;
-        const delta = currentPos - startPos;
-        handleResize(type as 'column' | 'row', index, delta);
-      };
-      
-      const handleMouseUp = () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-      
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-
-      const startPos = type === "column" ? e.evt.clientX : e.evt.clientY;
       const sizes = type === "column" ? [...colWidths] : [...rowHeights];
-
+      
       setResizing({
         type,
         index,
@@ -174,64 +158,46 @@ const TableElement = observer(
       });
 
       const handleMouseMove = (moveEvt: MouseEvent) => {
-        if (!resizing) return;
-
-        const currentPos =
-          type === "column" ? moveEvt.clientX : moveEvt.clientY;
+        const currentPos = type === 'column' ? moveEvt.clientX : moveEvt.clientY;
         const delta = currentPos - startPos;
 
         // Update sizes based on the delta
         const newSizes = [...sizes];
+        const minSize = 20;
 
-        if (type === "column") {
-          // Ensure we don't make columns too small
-          const minColWidth = 20;
-          const maxDelta = newSizes[index] - minColWidth;
-          const safetyDelta = delta > 0 ? delta : Math.max(delta, -maxDelta);
+        if (index < newSizes.length - 1) {
+          const currentSize = newSizes[index];
+          const nextSize = newSizes[index + 1];
+          
+          const maxDelta = nextSize - minSize;
+          const safeDelta = Math.min(delta, maxDelta);
+          
+          newSizes[index] = Math.max(currentSize + safeDelta, minSize);
+          newSizes[index + 1] = Math.max(nextSize - safeDelta, minSize);
+          
+          setResizing({
+            type,
+            index,
+            startPos,
+            sizes: newSizes,
+          });
 
-          newSizes[index] += safetyDelta;
-          if (index < newSizes.length - 1) {
-            // If not the last column, take space from the next column
-            const nextMaxDelta = newSizes[index + 1] - minColWidth;
-            const nextSafetyDelta =
-              -safetyDelta > 0
-                ? -safetyDelta
-                : Math.max(-safetyDelta, -nextMaxDelta);
-            newSizes[index + 1] -= safetyDelta;
-          }
-        } else {
-          // Ensure we don't make rows too small
-          const minRowHeight = 20;
-          const maxDelta = newSizes[index] - minRowHeight;
-          const safetyDelta = delta > 0 ? delta : Math.max(delta, -maxDelta);
-
-          newSizes[index] += safetyDelta;
-          if (index < newSizes.length - 1) {
-            // If not the last row, take space from the next row
-            const nextMaxDelta = newSizes[index + 1] - minRowHeight;
-            const nextSafetyDelta =
-              -safetyDelta > 0
-                ? -safetyDelta
-                : Math.max(-safetyDelta, -nextMaxDelta);
-            newSizes[index + 1] -= safetyDelta;
+          if (type === 'column') {
+            element.set({ columnWidths: newSizes });
+          } else {
+            element.set({ rowHeights: newSizes });
           }
         }
-
-        // Update the resizing state with the new sizes
-        setResizing({
-          ...resizing,
-          sizes: newSizes,
-        });
       };
-
+      
       const handleMouseUp = () => {
         setResizing(null);
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleMouseUp);
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
       };
-
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
+      
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
     };
 
     // Calculate cell position and dimensions
