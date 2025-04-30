@@ -1,13 +1,11 @@
 "use client";
-// import all default sections
-import { DEFAULT_SECTIONS } from "polotno/side-panel";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from "polotno";
 import { Toolbar } from "polotno/toolbar/toolbar";
 import { PagesTimeline } from "polotno/pages-timeline";
 import { ZoomButtons } from "polotno/toolbar/zoom-buttons";
-import { SidePanel } from "polotno/side-panel";
+import { SidePanel, DEFAULT_SECTIONS } from "polotno/side-panel";
 import { Workspace } from "polotno/canvas/workspace";
 
 import { createStore } from "polotno/model/store";
@@ -17,7 +15,7 @@ import { ActionControls } from "./ActionControls";
 import { unstable_useHtmlTextRender } from "polotno/config";
 
 // Import our custom table components
-import "./custom-table";
+import "./polotno-table";
 
 unstable_useHtmlTextRender(true);
 

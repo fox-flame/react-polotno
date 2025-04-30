@@ -8,7 +8,7 @@ export const createTableElement = (store) => {
     ...state,
     headerColor: "#e6f7ff",
     rowColors: {},
-    columnColors: {}
+    columnColors: {},
   });
 
   store.activePage.addElement({
@@ -25,8 +25,37 @@ export const createTableElement = (store) => {
         ...state,
         headerColor: "#e6f7ff",
         rowColors: {},
-        columnColors: {}
-      }
-    }
+        columnColors: {},
+      },
+    },
+  });
+};
+
+// Helper function to add a new table to the canvas
+export const handleAddTable = (store) => {
+  // Get the active page
+  const page = store.activePage;
+  if (!page) return;
+
+  // Add a new table element with all required props
+  page.addElement({
+    type: "table",
+    x: 50,
+    y: 50,
+    width: 400,
+    height: 200,
+    rows: 3,
+    columns: 4,
+    cellPadding: 8,
+    borderWidth: 1,
+    borderColor: "#dddddd",
+    headerRow: true,
+    data: [
+      ["Header 1", "Header 2", "Header 3", "Header 4"],
+      ["Cell 1,1", "Cell 1,2", "Cell 1,3", "Cell 1,4"],
+      ["Cell 2,1", "Cell 2,2", "Cell 2,3", "Cell 2,4"],
+    ],
+    cellStyles: {},
+    selectedCells: [],
   });
 };
