@@ -46,27 +46,28 @@ const CellEditor = observer(
         : Array(element.rows).fill(element.height / element.rows);
 
       // Calculate cell position
+      let startX = 0;
+      let startY = 0;
+      
       for (let i = 0; i < col; i++) {
-        x += columnWidths[i];
+        startX += columnWidths[i];
       }
       for (let i = 0; i < row; i++) {
-        y += rowHeights[i];
+        startY += rowHeights[i];
       }
 
-      // Adjust for element position and stage transform
-      x = x + element.x;
-      y = y + element.y;
+      // Calculate absolute position
+      const absX = startX + element.x;
+      const absY = startY + element.y;
 
-      // Convert to screen coordinates if store and page are available
-      if (element.store?.selectedPage) {
-        const screenPoint = element.store.selectedPage.screenPointFromCanvas({ x, y });
-        x = screenPoint.x;
-        y = screenPoint.y;
-      } else {
-        // Fallback to basic transform
-        x = x * (element.store?.scale || 1) + (element.store?.x || 0);
-        y = y * (element.store?.scale || 1) + (element.store?.y || 0);
-      }
+      // Apply transform
+      const scale = element.store?.scale || 1;
+      const stageX = element.store?.x || 0;
+      const stageY = element.store?.y || 0;
+
+      // Calculate final position with transform
+      x = absX * scale + stageX;
+      y = absY * scale + stageY;
 
       return {
         x,
