@@ -459,10 +459,10 @@ const getColorBrightness = (color: string) => {
           {renderRowResizers()}
           
           {/* Bottom Center Drag Handle */}
-          <Group>
+          <Group y={element.height}>
             <Rect
               x={element.width / 2 - 30}
-              y={element.height + 5}
+              y={20}
               width={60}
               height={15}
               fill="rgba(0, 0, 0, 0.2)"
@@ -472,7 +472,7 @@ const getColorBrightness = (color: string) => {
             />
             <Text
               x={element.width / 2 - 30}
-              y={element.height + 8}
+              y={23}
               width={60}
               height={15}
               text="DRAG"
