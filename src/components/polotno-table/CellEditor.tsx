@@ -57,10 +57,16 @@ const CellEditor = observer(
       x = x + element.x;
       y = y + element.y;
 
-      // Convert to screen coordinates
-      const screenPoint = element.store.selectedPage.screenPointFromCanvas({ x, y });
-      x = screenPoint.x;
-      y = screenPoint.y;
+      // Convert to screen coordinates if store and page are available
+      if (element.store?.selectedPage) {
+        const screenPoint = element.store.selectedPage.screenPointFromCanvas({ x, y });
+        x = screenPoint.x;
+        y = screenPoint.y;
+      } else {
+        // Fallback to basic transform
+        x = x * (element.store?.scale || 1) + (element.store?.x || 0);
+        y = y * (element.store?.scale || 1) + (element.store?.y || 0);
+      }
 
       return {
         x,
