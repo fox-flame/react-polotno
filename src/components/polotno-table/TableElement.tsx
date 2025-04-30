@@ -29,7 +29,7 @@ const TableElement = observer(
     // Calculate row heights and column widths
     const calculateTableDimensions = () => {
       const { rows, columns, width, height } = element;
-      
+
       // Use stored dimensions or default to equal distribution
       let colWidths = element.columnWidths || Array(columns).fill(width / columns);
       let rowHeights = element.rowHeights || Array(rows).fill(height / rows);
@@ -54,34 +54,34 @@ const TableElement = observer(
       if (type === 'column') {
         const newColumnWidths = [...(element.columnWidths || colWidths)];
         const nextIndex = index + 1;
-        
+
         // Ensure we don't make columns too small
         const minWidth = 20;
         const currentWidth = newColumnWidths[index];
         const nextWidth = newColumnWidths[nextIndex];
-        
+
         const maxDelta = nextWidth - minWidth;
         const safeDelta = Math.min(delta, maxDelta);
-        
+
         newColumnWidths[index] = Math.max(currentWidth + safeDelta, minWidth);
         newColumnWidths[nextIndex] = Math.max(nextWidth - safeDelta, minWidth);
-        
+
         element.set({ columnWidths: newColumnWidths });
       } else {
         const newRowHeights = [...(element.rowHeights || rowHeights)];
         const nextIndex = index + 1;
-        
+
         // Ensure we don't make rows too small
         const minHeight = 20;
         const currentHeight = newRowHeights[index];
         const nextHeight = newRowHeights[nextIndex];
-        
+
         const maxDelta = nextHeight - minHeight;
         const safeDelta = Math.min(delta, maxDelta);
-        
+
         newRowHeights[index] = Math.max(currentHeight + safeDelta, minHeight);
         newRowHeights[nextIndex] = Math.max(nextHeight - safeDelta, minHeight);
-        
+
         element.set({ rowHeights: newRowHeights });
       }
     };
@@ -146,10 +146,10 @@ const TableElement = observer(
     const handleResizerMouseDown = (type: string, index: number, e: any) => {
       console.log("🚀 ~ handleResizerMouseDown ~ type:", type);
       e.cancelBubble = true;
-      
+
       const startPos = type === 'column' ? e.evt.clientX : e.evt.clientY;
       const sizes = type === "column" ? [...colWidths] : [...rowHeights];
-      
+
       setResizing({
         type,
         index,
@@ -165,37 +165,41 @@ const TableElement = observer(
         const newSizes = [...sizes];
         const minSize = 20;
 
-        if (index < newSizes.length - 1) {
+        if (index === newSizes.length - 1) {
+          // For last column/row, just resize it directly
+          newSizes[index] = Math.max(sizes[index] + delta, minSize);
+        } else {
+          // For other columns/rows, adjust with next column/row
           const currentSize = newSizes[index];
           const nextSize = newSizes[index + 1];
-          
+
           const maxDelta = nextSize - minSize;
           const safeDelta = Math.min(delta, maxDelta);
-          
+
           newSizes[index] = Math.max(currentSize + safeDelta, minSize);
           newSizes[index + 1] = Math.max(nextSize - safeDelta, minSize);
-          
-          setResizing({
-            type,
-            index,
-            startPos,
-            sizes: newSizes,
-          });
+        }
 
-          if (type === 'column') {
-            element.set({ columnWidths: newSizes });
-          } else {
-            element.set({ rowHeights: newSizes });
-          }
+        setResizing({
+          type,
+          index,
+          startPos,
+          sizes: newSizes,
+        });
+
+        if (type === 'column') {
+          element.set({ columnWidths: newSizes });
+        } else {
+          element.set({ rowHeights: newSizes });
         }
       };
-      
+
       const handleMouseUp = () => {
         setResizing(null);
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
       };
-      
+
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
     };
