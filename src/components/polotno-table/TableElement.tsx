@@ -50,15 +50,39 @@ const TableElement = observer(
     const { colWidths, rowHeights } = calculateTableDimensions();
 
     // Update dimensions when resizing
-    const updateDimensions = (type: 'column' | 'row', index: number, newSize: number) => {
-      const { columnWidths = [...colWidths], rowHeights = [...rowHeights] } = element;
-      
+    const handleResize = (type: 'column' | 'row', index: number, delta: number) => {
       if (type === 'column') {
-        columnWidths[index] = Math.max(newSize, 20); // Minimum width of 20px
-        element.set({ columnWidths });
+        const newColumnWidths = [...(element.columnWidths || colWidths)];
+        const nextIndex = index + 1;
+        
+        // Ensure we don't make columns too small
+        const minWidth = 20;
+        const currentWidth = newColumnWidths[index];
+        const nextWidth = newColumnWidths[nextIndex];
+        
+        const maxDelta = nextWidth - minWidth;
+        const safeDelta = Math.min(delta, maxDelta);
+        
+        newColumnWidths[index] = Math.max(currentWidth + safeDelta, minWidth);
+        newColumnWidths[nextIndex] = Math.max(nextWidth - safeDelta, minWidth);
+        
+        element.set({ columnWidths: newColumnWidths });
       } else {
-        rowHeights[index] = Math.max(newSize, 20); // Minimum height of 20px
-        element.set({ rowHeights });
+        const newRowHeights = [...(element.rowHeights || rowHeights)];
+        const nextIndex = index + 1;
+        
+        // Ensure we don't make rows too small
+        const minHeight = 20;
+        const currentHeight = newRowHeights[index];
+        const nextHeight = newRowHeights[nextIndex];
+        
+        const maxDelta = nextHeight - minHeight;
+        const safeDelta = Math.min(delta, maxDelta);
+        
+        newRowHeights[index] = Math.max(currentHeight + safeDelta, minHeight);
+        newRowHeights[nextIndex] = Math.max(nextHeight - safeDelta, minHeight);
+        
+        element.set({ rowHeights: newRowHeights });
       }
     };
 
@@ -122,6 +146,22 @@ const TableElement = observer(
     const handleResizerMouseDown = (type: string, index: number, e: any) => {
       console.log("🚀 ~ handleResizerMouseDown ~ type:", type);
       e.cancelBubble = true;
+      
+      const startPos = type === 'column' ? e.evt.clientX : e.evt.clientY;
+      
+      const handleMouseMove = (moveEvt: MouseEvent) => {
+        const currentPos = type === 'column' ? moveEvt.clientX : moveEvt.clientY;
+        const delta = currentPos - startPos;
+        handleResize(type as 'column' | 'row', index, delta);
+      };
+      
+      const handleMouseUp = () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+      
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
 
       const startPos = type === "column" ? e.evt.clientX : e.evt.clientY;
       const sizes = type === "column" ? [...colWidths] : [...rowHeights];
