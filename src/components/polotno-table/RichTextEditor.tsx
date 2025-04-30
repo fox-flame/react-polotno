@@ -41,6 +41,9 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
     // Apply cell styles to the editor
     const getEditorStyle = () => {
       return {
+        position: 'absolute',
+        left: `${x}px`,
+        top: `${y}px`,
         width: `${width}px`,
         height: `${height}px`,
         border: "none",
@@ -56,6 +59,7 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
         outline: "none",
         resize: "none",
         overflow: "auto",
+        zIndex: 1000,
       };
     };
 
