@@ -28,7 +28,7 @@ const CellEditor = observer(
     const calculateEditorPosition = () => {
       if (!element.store) return { x: 0, y: 0, width: 0, height: 0 };
       
-      const scale = element.store?.scale || 1;
+      const scale = element.store.scale;
       const stagePos = { 
         x: element.store.x || 0,
         y: element.store.y || 0
@@ -59,6 +59,9 @@ const CellEditor = observer(
       // Calculate absolute position
       const absX = startX + element.x;
       const absY = startY + element.y;
+
+      // Apply transform
+      const scale = element.store?.scale || 1;
       const stageX = element.store?.x || 0;
       const stageY = element.store?.y || 0;
 
