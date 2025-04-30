@@ -53,10 +53,14 @@ const CellEditor = observer(
         y += rowHeights[i];
       }
 
-      // Adjust for element position, stage scale/position, and cell padding
-      const padding = element.cellPadding || 8;
-      x = (x + element.x + padding) * scale + stagePos.x;
-      y = (y + element.y + padding) * scale + stagePos.y;
+      // Adjust for element position and stage transform
+      x = x + element.x;
+      y = y + element.y;
+
+      // Convert to screen coordinates
+      const screenPoint = element.store.selectedPage.screenPointFromCanvas({ x, y });
+      x = screenPoint.x;
+      y = screenPoint.y;
 
       return {
         x,
