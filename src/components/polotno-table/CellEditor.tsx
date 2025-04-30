@@ -29,19 +29,27 @@ const CellEditor = observer(
       let x = 0;
       let y = 0;
 
+      // Get default sizes if not set
+      const columnWidths = element.columnWidths?.length 
+        ? element.columnWidths 
+        : Array(element.columns).fill(element.width / element.columns);
+      const rowHeights = element.rowHeights?.length
+        ? element.rowHeights
+        : Array(element.rows).fill(element.height / element.rows);
+
       // Sum up widths and heights before this cell
       for (let i = 0; i < col; i++) {
-        x += element.columnWidths[i];
+        x += columnWidths[i];
       }
       for (let i = 0; i < row; i++) {
-        y += element.rowHeights[i];
+        y += rowHeights[i];
       }
 
       return {
         x,
         y,
-        width: element.columnWidths[col],
-        height: element.rowHeights[row],
+        width: columnWidths[col],
+        height: rowHeights[row],
       };
     };
 
