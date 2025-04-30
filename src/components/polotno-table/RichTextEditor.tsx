@@ -97,8 +97,8 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
           ref={editorRef}
           contentEditable
           style={{
-            width: `${width}px`,
-            height: `${height}px`,
+            width: `${width - 8}px`,
+            height: `${height - 8}px`,
             border: "none",
             padding: "4px",
             fontFamily: "Arial, sans-serif",
@@ -108,10 +108,13 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
             textDecoration: cellStyle.textDecoration || "none",
             color: cellStyle.textColor || "#000000",
             textAlign: cellStyle.textAlign || "left",
-            backgroundColor: "transparent",
+            backgroundColor: "white",
             outline: "none",
             resize: "none",
-            overflow: "auto",
+            overflow: "hidden",
+            position: "absolute",
+            left: "0",
+            top: "0",
           }}
           onInput={handleChange}
           onBlur={onBlur}

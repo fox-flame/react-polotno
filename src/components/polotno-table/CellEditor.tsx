@@ -26,22 +26,22 @@ const CellEditor = observer(
 
     // Calculate position and size for the editor
     const calculateEditorPosition = () => {
-      // Element has all details for the table
-      const { rows, columns, width, height } = element;
+      let x = 0;
+      let y = 0;
 
-      // Calculate cell sizes based on equal distribution (simplified)
-      const cellWidth = width / columns;
-      const cellHeight = height / rows;
-
-      // Calculate position
-      const x = cellWidth * col;
-      const y = cellHeight * row;
+      // Sum up widths and heights before this cell
+      for (let i = 0; i < col; i++) {
+        x += element.columnWidths[i];
+      }
+      for (let i = 0; i < row; i++) {
+        y += element.rowHeights[i];
+      }
 
       return {
         x,
         y,
-        width: cellWidth,
-        height: cellHeight,
+        width: element.columnWidths[col],
+        height: element.rowHeights[row],
       };
     };
 
