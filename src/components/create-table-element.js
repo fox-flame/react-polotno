@@ -37,12 +37,6 @@ export const handleAddTable = (store) => {
   const page = store.activePage;
   if (!page) return;
 
-  // Get pointer position for initial placement
-  const pointerPosition = store.activeStage?.getPointerPosition() || {
-    x: 50,
-    y: 50,
-  };
-
   // Add a new table element with all required props
   const element = page.addElement({
     type: "table",
@@ -65,7 +59,4 @@ export const handleAddTable = (store) => {
     selectedCells: [],
     draggable: true,
   });
-
-  // Select the element for immediate dragging
-  store.selectElements([element]);
 };
