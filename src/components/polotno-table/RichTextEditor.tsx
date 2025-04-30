@@ -88,8 +88,7 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
         divProps={{
           style: {
             position: "absolute",
-            left: x + 'px',
-            top: y + 'px',
+            transform: `translate(${x}px, ${y}px)`,
             width: width + 'px',
             height: height + 'px',
             zIndex: 1000,
@@ -115,7 +114,9 @@ const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(
             outline: "none",
             resize: "none",
             overflow: "hidden",
-            position: "relative",
+            position: "absolute",
+            top: 0,
+            left: 0,
             boxSizing: "border-box",
           }}
           onInput={handleChange}
