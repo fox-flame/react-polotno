@@ -3,34 +3,29 @@ import React, { useRef, useState } from "react";
 import { observer } from "mobx-react-lite";
 import { Group, Rect, Text, Line } from "react-konva";
 import { unstable_registerShapeComponent } from "polotno/config";
+import { Html } from "react-konva-utils";
 
-import CellEditor from "./CellEditor";
+
 
 // TableElement component for rendering a table on the canvas
 const TableElement = observer(
   ({ element, store }: { element: any; store: any }) => {
-    console.log("🚀 ~ element:", element);
-    const groupRef = useRef(null);
     const [editingCell, setEditingCell] = useState<string | null>(null);
 
-const getColorBrightness = (color: string) => {
-  // For transparent, return 1 (light)
-  if (color === 'transparent') return 1;
-  
-  // Convert hex to RGB
-  const hex = color.replace('#', '');
-  const r = parseInt(hex.substr(0, 2), 16) / 255;
-  const g = parseInt(hex.substr(2, 2), 16) / 255;
-  const b = parseInt(hex.substr(4, 2), 16) / 255;
-  
-  // Calculate relative luminance
-  return 0.299 * r + 0.587 * g + 0.114 * b;
-};
+    const getColorBrightness = (color: string) => {
+      // For transparent, return 1 (light)
+      if (color === "transparent") return 1;
 
+      // Convert hex to RGB
+      const hex = color.replace("#", "");
+      const r = parseInt(hex.substr(0, 2), 16) / 255;
+      const g = parseInt(hex.substr(2, 2), 16) / 255;
+      const b = parseInt(hex.substr(4, 2), 16) / 255;
 
-    const [cellMeasurements, setCellMeasurements] = useState<{
-      [key: string]: { width: number; height: number };
-    }>({});
+      // Calculate relative luminance
+      return 0.299 * r + 0.587 * g + 0.114 * b;
+    };
+
     const [hoveredResizer, setHoveredResizer] = useState<{
       type: string;
       index: number;
@@ -41,15 +36,15 @@ const getColorBrightness = (color: string) => {
       startPos: number;
       sizes: number[];
     } | null>(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const dragStartPos = useRef({ x: 0, y: 0 });
+    
 
     // Calculate row heights and column widths
     const calculateTableDimensions = () => {
       const { rows, columns, width, height } = element;
 
       // Use stored dimensions or default to equal distribution
-      let colWidths = element.columnWidths || Array(columns).fill(width / columns);
+      let colWidths =
+        element.columnWidths || Array(columns).fill(width / columns);
       let rowHeights = element.rowHeights || Array(rows).fill(height / rows);
 
       // Ensure arrays match current dimensions
@@ -66,43 +61,6 @@ const getColorBrightness = (color: string) => {
     };
 
     const { colWidths, rowHeights } = calculateTableDimensions();
-
-    // Update dimensions when resizing
-    const handleResize = (type: 'column' | 'row', index: number, delta: number) => {
-      if (type === 'column') {
-        const newColumnWidths = [...(element.columnWidths || colWidths)];
-        const nextIndex = index + 1;
-
-        // Ensure we don't make columns too small
-        const minWidth = 20;
-        const currentWidth = newColumnWidths[index];
-        const nextWidth = newColumnWidths[nextIndex];
-
-        const maxDelta = nextWidth - minWidth;
-        const safeDelta = Math.min(delta, maxDelta);
-
-        newColumnWidths[index] = Math.max(currentWidth + safeDelta, minWidth);
-        newColumnWidths[nextIndex] = Math.max(nextWidth - safeDelta, minWidth);
-
-        element.set({ columnWidths: newColumnWidths });
-      } else {
-        const newRowHeights = [...(element.rowHeights || rowHeights)];
-        const nextIndex = index + 1;
-
-        // Ensure we don't make rows too small
-        const minHeight = 20;
-        const currentHeight = newRowHeights[index];
-        const nextHeight = newRowHeights[nextIndex];
-
-        const maxDelta = nextHeight - minHeight;
-        const safeDelta = Math.min(delta, maxDelta);
-
-        newRowHeights[index] = Math.max(currentHeight + safeDelta, minHeight);
-        newRowHeights[nextIndex] = Math.max(nextHeight - safeDelta, minHeight);
-
-        element.set({ rowHeights: newRowHeights });
-      }
-    };
 
     // Handle mousedown on cell
     const handleCellClick = (row: number, col: number, e: any) => {
@@ -132,7 +90,6 @@ const getColorBrightness = (color: string) => {
     // Handle double click on cell
     const handleCellDoubleClick = (row: number, col: number, e: any) => {
       setEditingCell(`${row},${col}`);
-      e.cancelBubble = true;
     };
 
     // Handle cell edit completion
@@ -155,17 +112,12 @@ const getColorBrightness = (color: string) => {
       setEditingCell(null);
     };
 
-    // Handle cell edit cancel
-    const handleCellEditCancel = () => {
-      setEditingCell(null);
-    };
 
     // Handle mouse down on resizer
     const handleResizerMouseDown = (type: string, index: number, e: any) => {
-      console.log("🚀 ~ handleResizerMouseDown ~ type:", type);
       e.cancelBubble = true;
 
-      const startPos = type === 'column' ? e.evt.clientX : e.evt.clientY;
+      const startPos = type === "column" ? e.evt.clientX : e.evt.clientY;
       const sizes = type === "column" ? [...colWidths] : [...rowHeights];
 
       setResizing({
@@ -176,7 +128,8 @@ const getColorBrightness = (color: string) => {
       });
 
       const handleMouseMove = (moveEvt: MouseEvent) => {
-        const currentPos = type === 'column' ? moveEvt.clientX : moveEvt.clientY;
+        const currentPos =
+          type === "column" ? moveEvt.clientX : moveEvt.clientY;
         const delta = currentPos - startPos;
 
         // Update sizes based on the delta
@@ -205,7 +158,7 @@ const getColorBrightness = (color: string) => {
           sizes: newSizes,
         });
 
-        if (type === 'column') {
+        if (type === "column") {
           element.set({ columnWidths: newSizes });
         } else {
           element.set({ rowHeights: newSizes });
@@ -214,12 +167,12 @@ const getColorBrightness = (color: string) => {
 
       const handleMouseUp = () => {
         setResizing(null);
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
       };
 
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
     };
 
     // Calculate cell position and dimensions
@@ -259,8 +212,11 @@ const getColorBrightness = (color: string) => {
 
     // Render column resizers
     const renderColumnResizers = () => {
-      let totalHeight = rowHeights.reduce((sum, height) => sum + height, 0);
-      return colWidths.map((width, i) => {
+      let totalHeight = rowHeights.reduce(
+        (sum: any, height: any) => sum + height,
+        0
+      );
+      return colWidths.map((width: any, i: any) => {
         let x = 0;
         for (let j = 0; j <= i; j++) {
           x +=
@@ -290,8 +246,11 @@ const getColorBrightness = (color: string) => {
 
     // Render row resizers
     const renderRowResizers = () => {
-      let totalWidth = colWidths.reduce((sum, width) => sum + width, 0);
-      return rowHeights.map((height, i) => {
+      let totalWidth = colWidths.reduce(
+        (sum: any, width: any) => sum + width,
+        0
+      );
+      return rowHeights.map((height: any, i: any) => {
         let y = 0;
         for (let j = 0; j <= i; j++) {
           y +=
@@ -352,11 +311,11 @@ const getColorBrightness = (color: string) => {
             ? element.getCellStyle(row, col)
             : (element.cellStyles && element.cellStyles[cellKey]) || {};
 
-          const backgroundColor = 
-            element.cellBackgrounds?.[cellKey] || 
-            cellStyle.backgroundColor || 
+          const backgroundColor =
+            element.cellBackgrounds?.[cellKey] ||
+            cellStyle.backgroundColor ||
             (isHeader ? "#f3f4f6" : "#ffffff");
-          const textColor = 
+          const textColor =
             getColorBrightness(backgroundColor) > 0.5 ? "#000000" : "#ffffff";
           const fontWeight =
             cellStyle.fontWeight || (isHeader ? "bold" : "normal");
@@ -370,12 +329,60 @@ const getColorBrightness = (color: string) => {
               <Rect
                 width={width}
                 height={height}
-                fill={element.cellBackgrounds?.[`${row},${col}`] || backgroundColor}
+                fill={
+                  element.cellBackgrounds?.[`${row},${col}`] || backgroundColor
+                }
                 stroke={borderColor}
                 strokeWidth={borderWidth}
                 perfectDrawEnabled={false}
               />
-              {isSelected && (
+              {editingCell && editingCell === cellKey && (
+                   <Html>
+                    <div
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        top: 0,
+                        width: width,
+                        height: height,
+                        transform: `rotate(${element.rotation}deg)`,
+                        transformOrigin: "center center",
+                      }}
+                    >
+                      <textarea
+                        defaultValue={text || ""}
+                        onBlur={(e)=>handleCellEditComplete(row,col,e.target.value)}
+                        // onChange={(e) =>
+                        //   handleTextChange(e, rowIndex, colIndex)
+                        // }
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          border: "none",
+                          padding: (element.cellPadding || 8) + "px",
+                          margin: 0,
+                          background: 
+                  element.cellBackgrounds?.[`${row},${col}`] || backgroundColor
+                ,
+                          outline: "none",
+                          textAlign: textAlign,
+                          verticalAlign:"middle",
+                          fontSize: "14px",
+                          resize: "none",
+                          overflow: "hidden",
+                          cursor: "text",
+                          color: textColor,
+                          boxSizing: "border-box",
+                          wordWrap: "break-word",
+                          wordBreak:'break-all',
+                          whiteSpace: "pre-wrap",
+                        }}
+                      />
+                    </div>
+                  </Html>
+              )}
+              
+              {/* {isSelected && (
                 <Rect
                   width={width}
                   height={height}
@@ -384,10 +391,9 @@ const getColorBrightness = (color: string) => {
                   dash={[2, 2]}
                   perfectDrawEnabled={false}
                 />
-              )}
+              )} */}
               <Text
-                x={cellPadding}
-                y={cellPadding}
+                padding={element.cellPadding}
                 width={width - cellPadding * 2}
                 height={height - cellPadding * 2}
                 text={text}
@@ -410,7 +416,7 @@ const getColorBrightness = (color: string) => {
                 height={height}
                 fill="transparent"
                 onMouseDown={(e) => handleCellClick(row, col, e)}
-                onDblClick={(e) => handleCellDoubleClick(row, col, e)}
+                onClick={(e) => handleCellDoubleClick(row, col, e)}
                 perfectDrawEnabled={false}
               />
             </Group>
@@ -421,58 +427,66 @@ const getColorBrightness = (color: string) => {
       return cells;
     };
 
-    const handleDragStart = (e: any) => {
-      setIsDragging(true);
-      const pos = e.target.getStage().getPointerPosition();
-      dragStartPos.current = {
-        x: pos.x - element.x,
-        y: pos.y - element.y
-      };
-      e.cancelBubble = true;
-    };
-
-    const handleDragMove = (e: any) => {
-      if (!isDragging) return;
-      const pos = e.target.getStage().getPointerPosition();
+    const handleDrag = (event:any) => {
+      if (!element.isDragging) return;
       element.set({
-        x: pos.x - dragStartPos.current.x,
-        y: pos.y - dragStartPos.current.y
+        x: event.target.x(),
+        y: event.target.y(),
       });
     };
 
-    const handleDragEnd = () => {
-      setIsDragging(false);
+
+
+    const startDrag = () => {
+      element.set({ isDragging: true });
+    };
+  
+    const stopDrag = () => {
+      element.set({ isDragging: false });
     };
 
     return (
-      <>
+      
         <Group
+          width={element.width}
+          height={element.height}
+          id={element.id}
           draggable={!editingCell}
-          onDragStart={handleDragStart}
-          onDragMove={handleDragMove}
-          onDragEnd={handleDragEnd}
           x={element.x}
           y={element.y}
+          rotation={element.rotation}
+          onDragStart={startDrag}
+          onDragMove={handleDrag}
+          onDragEnd={stopDrag}
+          onClick={() => store.selectElements(['cp-custom-table'])}
         >
           {renderCells()}
           {renderColumnResizers()}
           {renderRowResizers()}
-          
+
           {/* Bottom Center Drag Handle */}
-          <Group>
+         {
+          store.selectedElements?.find((el:any)=>el.id === 'cp-custom-table' && el.type === 'table') &&  <Group
+          >
             <Rect
               x={element.width / 2 - 30}
-              y={rowHeights.reduce((sum, height) => sum + height, 0) + 5}
+              y={
+                rowHeights.reduce((sum: any, height: any) => sum + height, 0) +
+                5
+              }
               width={60}
               height={15}
               fill="rgba(0, 0, 0, 0.2)"
               cornerRadius={5}
-              onMouseDown={handleDragStart}
-              onMouseUp={handleDragEnd}
+              onMouseDown={startDrag}
+              onMouseUp={stopDrag}
             />
             <Text
               x={element.width / 2 - 30}
-              y={rowHeights.reduce((sum, height) => sum + height, 0) + 8}
+              y={
+                rowHeights.reduce((sum: any, height: any) => sum + height, 0) +
+                8
+              }
               width={60}
               height={15}
               text="DRAG"
@@ -481,33 +495,9 @@ const getColorBrightness = (color: string) => {
               align="center"
             />
           </Group>
+         }
         </Group>
-
-        {/* Cell Editor (appears when a cell is being edited) */}
-        {editingCell && (
-          <CellEditor
-            cellKey={editingCell}
-            initialText={
-              element.getText
-                ? element.getText(...editingCell.split(",").map(Number))
-                : (element.data &&
-                    element.data[editingCell.split(",")[0]] &&
-                    element.data[editingCell.split(",")[0]][
-                      editingCell.split(",")[1]
-                    ]) ||
-                  ""
-            }
-            element={element}
-            onComplete={handleCellEditComplete}
-            onCancel={handleCellEditCancel}
-          />
-        )}
-
-        {/* Show the toolbar if any cell is selected */}
-        {/* {element.selectedCells && element.selectedCells.length > 0 && (
-          <TableToolbar element={element} store={store} />
-        )} */}
-      </>
+      
     );
   }
 );

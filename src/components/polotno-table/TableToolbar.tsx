@@ -236,7 +236,7 @@ const TableToolbar = observer(({ store }: { store: any }) => {
   console.log("element", element);
 
   return (
-    <Navbar.Group align={Alignment.LEFT}>
+    <div>
       <div className="pb-2 border-b border-gray-200">
         <div className="text-sm font-medium text-gray-700">Table Editor</div>
       </div>
@@ -345,28 +345,34 @@ const TableToolbar = observer(({ store }: { store: any }) => {
               <div className="flex items-center space-x-2">
                 <div
                   className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
-                  style={{ 
-                    backgroundColor: element.selectedCells.length === 1 
-                      ? element.cellBackgrounds?.[element.selectedCells[0]] || '#ffffff'
-                      : '#ffffff' 
+                  style={{
+                    backgroundColor:
+                      element.selectedCells.length === 1
+                        ? element.cellBackgrounds?.[element.selectedCells[0]] ||
+                          "#ffffff"
+                        : "#ffffff",
                   }}
                   onClick={() => {
                     const newBackgrounds = { ...element.cellBackgrounds };
-                    element.selectedCells.forEach(cellKey => {
-                      newBackgrounds[cellKey] = element.selectedCells.length === 1
-                        ? undefined 
-                        : '#ffffff';
+                    element.selectedCells.forEach((cellKey: any) => {
+                      newBackgrounds[cellKey] =
+                        element.selectedCells.length === 1
+                          ? undefined
+                          : "#ffffff";
                     });
                     element.set({ cellBackgrounds: newBackgrounds });
                   }}
                 />
                 <ColorPicker
-                  value={element.selectedCells.length === 1 
-                    ? element.cellBackgrounds?.[element.selectedCells[0]] || '#ffffff'
-                    : '#ffffff'}
+                  value={
+                    element.selectedCells.length === 1
+                      ? element.cellBackgrounds?.[element.selectedCells[0]] ||
+                        "#ffffff"
+                      : "#ffffff"
+                  }
                   onChange={(color) => {
                     const newBackgrounds = { ...element.cellBackgrounds };
-                    element.selectedCells.forEach(cellKey => {
+                    element.selectedCells.forEach((cellKey: any) => {
                       newBackgrounds[cellKey] = color;
                     });
                     element.set({ cellBackgrounds: newBackgrounds });
@@ -473,7 +479,7 @@ const TableToolbar = observer(({ store }: { store: any }) => {
               }`}
               onClick={handleTextBold}
             >
-              <i className="fas fa-bold"></i>
+              <i className="fas fa-bold"></i> Bold
             </button>
             <button
               className={`flex-1 flex items-center justify-center p-2 rounded ${
@@ -483,7 +489,7 @@ const TableToolbar = observer(({ store }: { store: any }) => {
               }`}
               onClick={handleTextItalic}
             >
-              <i className="fas fa-italic"></i>
+              <i className="fas fa-italic"></i> Italic
             </button>
             <button
               className={`flex-1 flex items-center justify-center p-2 rounded ${
@@ -493,7 +499,7 @@ const TableToolbar = observer(({ store }: { store: any }) => {
               }`}
               onClick={handleTextUnderline}
             >
-              <i className="fas fa-underline"></i>
+              <i className="fas fa-underline"></i> Underline
             </button>
           </div>
 
@@ -510,7 +516,7 @@ const TableToolbar = observer(({ store }: { store: any }) => {
                 }`}
                 onClick={() => handleTextAlign("left")}
               >
-                <i className="fas fa-align-left"></i>
+                <i className="fas fa-align-left"></i> Align Left
               </button>
               <button
                 className={`flex-1 flex items-center justify-center p-2 rounded ${
@@ -520,7 +526,7 @@ const TableToolbar = observer(({ store }: { store: any }) => {
                 }`}
                 onClick={() => handleTextAlign("center")}
               >
-                <i className="fas fa-align-center"></i>
+                <i className="fas fa-align-center"></i> Align Center
               </button>
               <button
                 className={`flex-1 flex items-center justify-center p-2 rounded ${
@@ -530,7 +536,7 @@ const TableToolbar = observer(({ store }: { store: any }) => {
                 }`}
                 onClick={() => handleTextAlign("right")}
               >
-                <i className="fas fa-align-right"></i>
+                <i className="fas fa-align-right"></i> Align Right
               </button>
             </div>
           </div>
@@ -642,10 +648,10 @@ const TableToolbar = observer(({ store }: { store: any }) => {
           </div>
         </div>
       )}
-    </Navbar.Group>
+    </div>
   );
 });
 
 export default TableToolbar;
 
-unstable_registerToolbarComponent("table", TableToolbar);
+// unstable_registerToolbarComponent("table", TableToolbar);

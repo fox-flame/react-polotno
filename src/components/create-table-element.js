@@ -38,7 +38,8 @@ export const handleAddTable = (store) => {
   if (!page) return;
 
   // Add a new table element with all required props
-  const element = page.addElement({
+  page.addElement({
+    id:'cp-custom-table',
     type: "table",
     x: 50, // Center the table on pointer
     y: 50,
@@ -55,6 +56,9 @@ export const handleAddTable = (store) => {
       ["Cell 1,1", "Cell 1,2", "Cell 1,3", "Cell 1,4"],
       ["Cell 2,1", "Cell 2,2", "Cell 2,3", "Cell 2,4"],
     ],
+    custom: {
+      isTable: true,
+    },
     cellStyles: {},
     selectedCells: [],
     draggable: true,

@@ -16,6 +16,7 @@ import { unstable_useHtmlTextRender } from "polotno/config";
 
 // Import our custom table components
 import "./polotno-table";
+import "./custom-table";
 
 unstable_useHtmlTextRender(true);
 
@@ -32,7 +33,7 @@ const store = createStore({
 
 // add to global namespace for debugging
 window.store = store;
-const page = store.addPage();
+store.addPage();
 
 // we will have just two sections
 const sections = [TableSection, ...DEFAULT_SECTIONS];
