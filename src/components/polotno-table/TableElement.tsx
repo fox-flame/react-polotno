@@ -1,9 +1,10 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef, useEffect, useState, useMemo } from "react";
 import { observer } from "mobx-react-lite";
 import { Group, Rect, Text, Line } from "react-konva";
 import { unstable_registerShapeComponent } from "polotno/config";
 import { Html } from "react-konva-utils";
+import ContentEditable from "react-contenteditable";
 
 
 
@@ -11,6 +12,33 @@ import { Html } from "react-konva-utils";
 const TableElement = observer(
   ({ element, store }: { element: any; store: any }) => {
     const [editingCell, setEditingCell] = useState<string | null>(null);
+    const [showDrag, setShowDrag] = useState(true)
+    const htmlContainerRef = useRef<HTMLDivElement>(null);
+    const isShowDrag = useMemo(()=> showDrag && store.selectedElements?.find((el:any)=>el.id === 'cp-custom-table' && el.type === 'table'),[showDrag,store.selectedElements])
+
+    const tableRef = useRef<any>();
+
+
+
+    useEffect(() => {
+      if (!editingCell) return;
+      function handleClickOutside(event: MouseEvent) {
+        if (
+          htmlContainerRef.current &&
+          !htmlContainerRef.current.contains(event.target as Node)
+        ) {
+          setEditingCell(null);
+        }
+
+        // if(store.selectedElements?.find((el:any)=>el.id === 'cp-custom-table' && el.type === 'table')){
+        //   setShowDrag(false)
+        // }
+      }
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [editingCell]);
 
     const getColorBrightness = (color: string) => {
       // For transparent, return 1 (light)
@@ -98,6 +126,7 @@ const TableElement = observer(
       col: number,
       newText: string
     ) => {
+      setEditingCell(null);
       if (element.setText) {
         element.setText(row, col, newText);
       } else if (element.set) {
@@ -109,9 +138,26 @@ const TableElement = observer(
           element.set({ data: newData });
         }
       }
-      setEditingCell(null);
     };
 
+    // Handle text change
+    const handleTextChange = (
+      e: any,
+      row: number,
+      col: number
+    ) => {
+      if (element.setText) {
+        element.setText(row, col, e.target.value);
+      } else if (element.set) {
+        // Fallback if setText doesn't exist
+        const newData = [...(element.data || [])];
+        if (newData[row] && col < (element.columns || 0)) {
+          newData[row] = [...newData[row]];
+          newData[row][col] = e.target.value;
+          element.set({ data: newData });
+        }
+      }
+    };
 
     // Handle mouse down on resizer
     const handleResizerMouseDown = (type: string, index: number, e: any) => {
@@ -282,12 +328,10 @@ const TableElement = observer(
     const renderCells = () => {
       const cells = [];
       const {
-        data,
         cellPadding,
         borderWidth,
         borderColor,
         headerRow,
-        cellStyles,
         selectedCells,
       } = element;
 
@@ -303,7 +347,6 @@ const TableElement = observer(
               "";
 
           const isHeader = headerRow && row === 0;
-          const isSelected = selectedCells && selectedCells.includes(cellKey);
 
           // Get cell-specific styling
           // Get cell style directly from cellStyles as a fallback if getCellStyle is not available
@@ -339,6 +382,7 @@ const TableElement = observer(
               {editingCell && editingCell === cellKey && (
                    <Html>
                     <div
+                      ref={htmlContainerRef}
                       style={{
                         position: "absolute",
                         left: 0,
@@ -349,24 +393,21 @@ const TableElement = observer(
                         transformOrigin: "center center",
                       }}
                     >
-                      <textarea
-                        defaultValue={text || ""}
-                        onBlur={(e)=>handleCellEditComplete(row,col,e.target.value)}
-                        // onChange={(e) =>
-                        //   handleTextChange(e, rowIndex, colIndex)
-                        // }
+                      <ContentEditable
+                        html={text || ""}
+                        onChange={e => handleTextChange(e, row, col)}
+                        onBlur={e => handleCellEditComplete(row, col, e.target.innerText)}
+                        className="data-input"
                         style={{
                           width: "100%",
                           height: "100%",
-                          border: "none",
+                          border: `${borderWidth}px solid rgb(0, 123, 255)`,
                           padding: (element.cellPadding || 8) + "px",
                           margin: 0,
-                          background: 
-                  element.cellBackgrounds?.[`${row},${col}`] || backgroundColor
-                ,
+                          background: element.cellBackgrounds?.[`${row},${col}`] || backgroundColor,
                           outline: "none",
                           textAlign: textAlign,
-                          verticalAlign:"middle",
+                          verticalAlign: "middle",
                           fontSize: "14px",
                           resize: "none",
                           overflow: "hidden",
@@ -374,8 +415,13 @@ const TableElement = observer(
                           color: textColor,
                           boxSizing: "border-box",
                           wordWrap: "break-word",
-                          wordBreak:'break-all',
+                          wordBreak: "break-all",
                           whiteSpace: "pre-wrap",
+                        }}
+                        onPaste={e => {
+                          e.preventDefault();
+                          const text = e.clipboardData.getData('text/plain');
+                          document.execCommand('insertText', false, text);
                         }}
                       />
                     </div>
@@ -428,6 +474,7 @@ const TableElement = observer(
     };
 
     const handleDrag = (event:any) => {
+      console.log('drag',event)
       if (!element.isDragging) return;
       element.set({
         x: event.target.x(),
@@ -445,20 +492,39 @@ const TableElement = observer(
       element.set({ isDragging: false });
     };
 
-    return (
+    const handleTransform = (e:any) => {
+      const node = e.currentTarget;
+      const rect = node.getClientRect()
       
+
+      element.set({
+        width:Math.round(rect.width) - 10,
+        height:Math.round(rect.height) - 10
+      })
+    };
+
+    return (    
         <Group
-          width={element.width}
-          height={element.height}
+          ref={tableRef}
+         
+          // remember to use "element" name. Polotno will use it internally to find correct node
+          name="element"
+          // also it is important to pass id
+          // so polotno can automatically do selection
           id={element.id}
-          draggable={!editingCell}
           x={element.x}
           y={element.y}
-          rotation={element.rotation}
+          width={element.width}
+          height={element.height}
+          draggable={true}
           onDragStart={startDrag}
           onDragMove={handleDrag}
           onDragEnd={stopDrag}
-          onClick={() => store.selectElements(['cp-custom-table'])}
+          onClick={() => {
+            setShowDrag(true)
+            store.selectElements(['cp-custom-table'])
+          }}
+          onTransform={handleTransform}
         >
           {renderCells()}
           {renderColumnResizers()}
@@ -466,38 +532,37 @@ const TableElement = observer(
 
           {/* Bottom Center Drag Handle */}
          {
-          store.selectedElements?.find((el:any)=>el.id === 'cp-custom-table' && el.type === 'table') &&  <Group
-          >
-            <Rect
-              x={element.width / 2 - 30}
-              y={
-                rowHeights.reduce((sum: any, height: any) => sum + height, 0) +
-                5
-              }
-              width={60}
-              height={15}
-              fill="rgba(0, 0, 0, 0.2)"
-              cornerRadius={5}
-              onMouseDown={startDrag}
-              onMouseUp={stopDrag}
-            />
-            <Text
-              x={element.width / 2 - 30}
-              y={
-                rowHeights.reduce((sum: any, height: any) => sum + height, 0) +
-                8
-              }
-              width={60}
-              height={15}
-              text="DRAG"
-              fontSize={10}
-              fill="white"
-              align="center"
-            />
-          </Group>
+          // isShowDrag &&  <Group
+          // >
+          //   <Rect
+          //     x={element.width / 2 - 30}
+          //     y={
+          //       rowHeights.reduce((sum: any, height: any) => sum + height, 0) +
+          //       5
+          //     }
+          //     width={60}
+          //     height={15}
+          //     fill="rgba(0, 0, 0, 0.2)"
+          //     cornerRadius={5}
+          //     onMouseDown={startDrag}
+          //     onMouseUp={stopDrag}
+          //   />
+          //   <Text
+          //     x={element.width / 2 - 30}
+          //     y={
+          //       rowHeights.reduce((sum: any, height: any) => sum + height, 0) +
+          //       8
+          //     }
+          //     width={60}
+          //     height={15}
+          //     text="DRAG"
+          //     fontSize={10}
+          //     fill="white"
+          //     align="center"
+          //   />
+          // </Group>
          }
-        </Group>
-      
+        </Group> 
     );
   }
 );

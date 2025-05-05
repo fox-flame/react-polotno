@@ -17,6 +17,8 @@ import { unstable_useHtmlTextRender } from "polotno/config";
 // Import our custom table components
 import "./polotno-table";
 import "./custom-table";
+import { DropDown, ToolTipConfig } from "./polotno-table/tooltip";
+import { Tooltip } from "polotno/canvas/tooltip";
 
 unstable_useHtmlTextRender(true);
 
@@ -38,6 +40,7 @@ store.addPage();
 // we will have just two sections
 const sections = [TableSection, ...DEFAULT_SECTIONS];
 
+
 export const Editor = () => {
   return (
     <PolotnoContainer style={{ width: "100vw", height: "100vh" }}>
@@ -53,7 +56,7 @@ export const Editor = () => {
           store={store}
           components={{ SvgTableButton, ActionControls }}
         />
-        <Workspace store={store} />
+        <Workspace store={store} components={ToolTipConfig} />
         <ZoomButtons store={store} />
         <PagesTimeline store={store} />
       </WorkspaceWrap>

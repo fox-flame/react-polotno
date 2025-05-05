@@ -1,9 +1,25 @@
 "use client";
 import React, { useState } from "react";
 import { observer } from "mobx-react-lite";
-import { Navbar, NumericInput, Alignment } from "@blueprintjs/core";
+import { 
+  NumericInput, 
+  Button, 
+  Card, 
+  H5, 
+  Label, 
+  Switch, 
+  Slider, 
+  Colors,
+  Tooltip,
+  Popover,
+  Menu,
+  MenuItem,
+  Divider,
+  Classes,
+  ControlGroup,
+  ButtonGroup} from '@blueprintjs/core';
 import ColorPicker from "polotno/toolbar/color-picker";
-import { unstable_registerToolbarComponent } from "polotno/config";
+import { useTableActions } from "./hooks/useTableActions";
 
 const TableToolbar = observer(({ store }: { store: any }) => {
   const element = store.selectedElements[0];
@@ -17,176 +33,32 @@ const TableToolbar = observer(({ store }: { store: any }) => {
     null
   );
 
-  // Get the first selected cell for reference
-  const getSelectedCellIndices = (): [number, number] | null => {
-    if (element?.selectedCells?.length === 0) return null;
-
-    const cell = element?.selectedCells?.[0];
-    if (!cell || !cell.includes(",")) return null;
-
-    const [row, col] = cell.split(",").map(Number);
-    return [row, col];
-  };
-
-  // Get unique rows and columns from selected cells
-  const getSelectedRowsAndCols = () => {
-    const rows = new Set<number>();
-    const cols = new Set<number>();
-
-    element.selectedCells.forEach((cell: string) => {
-      const [row, col] = cell.split(",").map(Number);
-      rows.add(row);
-      cols.add(col);
-    });
-
-    return {
-      rows: Array.from(rows).sort((a, b) => a - b),
-      cols: Array.from(cols).sort((a, b) => a - b),
-    };
-  };
-
-  // General table structure operations
-  const handleAddRow = () => {
-    element.addRow();
-  };
-
-  const handleRemoveRow = () => {
-    const { rows } = getSelectedRowsAndCols();
-    if (rows.length > 0) {
-      // Remove from bottom to top to avoid index shifting issues
-      [...rows].reverse().forEach((rowIndex) => {
-        element.removeRow(rowIndex);
-      });
-    }
-  };
-
-  const handleAddColumn = () => {
-    element.addColumn();
-  };
-
-  const handleRemoveColumn = () => {
-    const { cols } = getSelectedRowsAndCols();
-    if (cols.length > 0) {
-      // Remove from right to left to avoid index shifting issues
-      [...cols].reverse().forEach((colIndex) => {
-        element.removeColumn(colIndex);
-      });
-    }
-  };
-
-  // Position-specific operations
-  const handleInsertRowAbove = (rowIndex: number) => {
-    element.addRow(rowIndex);
-    setShowRowOperations(false);
-  };
-
-  const handleInsertRowBelow = (rowIndex: number) => {
-    element.addRow(rowIndex + 1);
-    setShowRowOperations(false);
-  };
-
-  const handleDeleteRow = (rowIndex: number) => {
-    element.removeRow(rowIndex);
-    setShowRowOperations(false);
-  };
-
-  const handleInsertColumnLeft = (colIndex: number) => {
-    element.addColumn(colIndex);
-    setShowColumnOperations(false);
-  };
-
-  const handleInsertColumnRight = (colIndex: number) => {
-    element.addColumn(colIndex + 1);
-    setShowColumnOperations(false);
-  };
-
-  const handleDeleteColumn = (colIndex: number) => {
-    element.removeColumn(colIndex);
-    setShowColumnOperations(false);
-  };
-
-  // Cell formatting operations
-  const handleCellBackgroundChange = (color: string) => {
-    element.setStyleForSelectedCells({ backgroundColor: color });
-  };
-
-  const handleTextColorChange = (color: string) => {
-    element.setStyleForSelectedCells({ textColor: color });
-  };
-
-  const handleCellPaddingChange = (padding: number) => {
-    element.set({ cellPadding: padding });
-  };
-
-  const handleBorderWidthChange = (width: number) => {
-    element.set({ borderWidth: width });
-  };
-
-  const handleBorderColorChange = (color: string) => {
-    element.set({ borderColor: color });
-  };
-
-  // Text formatting operations
-  const handleTextBold = () => {
-    const selectedIndices = getSelectedCellIndices();
-    if (!selectedIndices) return;
-
-    const [row, col] = selectedIndices;
-    const currentStyle = element.getCellStyle(row, col);
-    const isBold = currentStyle.fontWeight === "bold";
-
-    element.setStyleForSelectedCells({
-      fontWeight: isBold ? "normal" : "bold",
-    });
-  };
-
-  const handleTextItalic = () => {
-    const selectedIndices = getSelectedCellIndices();
-    if (!selectedIndices) return;
-
-    const [row, col] = selectedIndices;
-    const currentStyle = element.getCellStyle(row, col);
-    const isItalic = currentStyle.fontStyle === "italic";
-
-    element.setStyleForSelectedCells({
-      fontStyle: isItalic ? "normal" : "italic",
-    });
-  };
-
-  const handleTextUnderline = () => {
-    const selectedIndices = getSelectedCellIndices();
-    if (!selectedIndices) return;
-
-    const [row, col] = selectedIndices;
-    const currentStyle = element.getCellStyle(row, col);
-    const isUnderlined = currentStyle.textDecoration === "underline";
-
-    element.setStyleForSelectedCells({
-      textDecoration: isUnderlined ? "none" : "underline",
-    });
-  };
-
-  const handleTextAlign = (align: "left" | "center" | "right") => {
-    element.setStyleForSelectedCells({
-      textAlign: align,
-    });
-  };
-
-  const handleFontSizeChange = (size: number) => {
-    element.setStyleForSelectedCells({
-      fontSize: size,
-    });
-  };
-
-  // Helper to determine if a style is active
-  const isStyleActive = (styleKey: string, value: string): boolean => {
-    const selectedIndices = getSelectedCellIndices();
-    if (!selectedIndices) return false;
-
-    const [row, col] = selectedIndices;
-    const style = element.getCellStyle(row, col);
-    return style[styleKey] === value;
-  };
+  // Use the custom hook for all table actions
+  const {
+    getSelectedCellIndices,
+    getSelectedRowsAndCols,
+    handleAddRow,
+    handleRemoveRow,
+    handleAddColumn,
+    handleRemoveColumn,
+    handleInsertRowAbove,
+    handleInsertRowBelow,
+    handleDeleteRow,
+    handleInsertColumnLeft,
+    handleInsertColumnRight,
+    handleDeleteColumn,
+    handleCellBackgroundChange,
+    handleTextColorChange,
+    handleCellPaddingChange,
+    handleBorderWidthChange,
+    handleBorderColorChange,
+    handleTextBold,
+    handleTextItalic,
+    handleTextUnderline,
+    handleTextAlign,
+    handleFontSizeChange,
+    isStyleActive,
+  } = useTableActions(element);
 
   // Determine if the cell has a specific style applied
   const isBold = isStyleActive("fontWeight", "bold");
@@ -197,7 +69,6 @@ const TableToolbar = observer(({ store }: { store: any }) => {
   const getTextAlign = (): "left" | "center" | "right" => {
     const selectedIndices = getSelectedCellIndices();
     if (!selectedIndices) return "left";
-
     const [row, col] = selectedIndices;
     const style = element.getCellStyle(row, col);
     return (style.textAlign as "left" | "center" | "right") || "left";
@@ -207,7 +78,6 @@ const TableToolbar = observer(({ store }: { store: any }) => {
   const getFontSize = (): number => {
     const selectedIndices = getSelectedCellIndices();
     if (!selectedIndices) return 14;
-
     const [row, col] = selectedIndices;
     const style = element.getCellStyle(row, col);
     return style.fontSize || 14;
@@ -217,7 +87,6 @@ const TableToolbar = observer(({ store }: { store: any }) => {
   const getTextColor = (): string => {
     const selectedIndices = getSelectedCellIndices();
     if (!selectedIndices) return "#000000";
-
     const [row, col] = selectedIndices;
     const style = element.getCellStyle(row, col);
     return style.textColor || "#000000";
@@ -227,7 +96,6 @@ const TableToolbar = observer(({ store }: { store: any }) => {
   const getCellBackgroundColor = (): string => {
     const selectedIndices = getSelectedCellIndices();
     if (!selectedIndices) return "#ffffff";
-
     const [row, col] = selectedIndices;
     const style = element.getCellStyle(row, col);
     return style.backgroundColor || "#ffffff";
@@ -236,140 +104,147 @@ const TableToolbar = observer(({ store }: { store: any }) => {
   console.log("element", element);
 
   return (
-    <div>
-      <div className="pb-2 border-b border-gray-200">
-        <div className="text-sm font-medium text-gray-700">Table Editor</div>
-      </div>
-
+    <div className="bp4-elevation-1" style={{ 
+      padding: '16px', 
+      borderRadius: '4px',
+      backgroundColor: Colors.WHITE
+    }}>
       {/* Table Structure Controls */}
-      <div className="bg-gray-50 p-3 rounded-lg">
-        <h3 className="text-xs uppercase text-gray-500 font-medium mb-2">
-          Table Structure
-        </h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-700">Rows</span>
-            <div className="flex items-center">
-              <button
-                className="w-8 h-8 rounded bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100"
-                onClick={handleRemoveRow}
-                disabled={element.rows <= 1}
+      <Card className="bp4-elevation-2" style={{ 
+        marginBottom: '16px',
+        backgroundColor: Colors.LIGHT_GRAY5
+      }}>
+      <H5 className={Classes.HEADING} style={{ 
+          marginBottom: '16px',
+          color: Colors.DARK_GRAY1
+        }}>Table Structure</H5>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <Label className={Classes.TEXT_MUTED} style={{ marginBottom: 4 }}>Rows</Label>
+            <ButtonGroup>
+              <Tooltip content="Remove selected row" position="bottom">
+                <Button
+                  icon="minus"
+                  onClick={handleRemoveRow}
+                  disabled={element.rows <= 1}
+                  minimal
+                />
+              </Tooltip>
+              <Tooltip content="Add new row" position="bottom">
+                <Button
+                  icon="plus"
+                  onClick={handleAddRow}
+                  minimal
+                />
+              </Tooltip>
+              <Popover
+                content={
+                  <Menu>
+                    <MenuItem
+                      icon="arrow-up"
+                      text="Insert Above"
+                      onClick={() => handleInsertRowAbove(selectedRowForOps!)}
+                    />
+                    <MenuItem
+                      icon="arrow-down"
+                      text="Insert Below"
+                      onClick={() => handleInsertRowBelow(selectedRowForOps!)}
+                    />
+                    <Divider />
+                    <MenuItem
+                      icon="trash"
+                      text="Delete Row"
+                      intent="danger"
+                      onClick={() => handleDeleteRow(selectedRowForOps!)}
+                      disabled={element.rows <= 1}
+                    />
+                  </Menu>
+                }
+                position="bottom"
+                minimal
               >
-                <i className="fas fa-minus text-xs"></i>
-              </button>
-              <span className="w-8 text-center font-mono text-sm">
-                {element.rows}
-              </span>
-              <button
-                className="w-8 h-8 rounded bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100"
-                onClick={handleAddRow}
-              >
-                <i className="fas fa-plus text-xs"></i>
-              </button>
-              <button
-                className="ml-2 w-8 h-8 rounded bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100"
-                onClick={() => {
-                  const indices = getSelectedCellIndices();
-                  if (indices) {
-                    setSelectedRowForOps(indices[0]);
-                    setShowRowOperations(true);
-                    setShowColumnOperations(false);
-                  }
-                }}
-              >
-                <i className="fas fa-ellipsis-h text-xs"></i>
-              </button>
-            </div>
+                <Button icon="more" minimal />
+              </Popover>
+            </ButtonGroup>
           </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-700">Columns</span>
-            <div className="flex items-center">
-              <button
-                className="w-8 h-8 rounded bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100"
-                onClick={handleRemoveColumn}
-                disabled={element.columns <= 1}
+          <div>
+            <Label className={Classes.TEXT_MUTED} style={{ marginBottom: 4 }}>Columns</Label>
+            <ButtonGroup>
+              <Tooltip content="Remove selected column" position="bottom">
+                <Button
+                  icon="minus"
+                  onClick={handleRemoveColumn}
+                  disabled={element.columns <= 1}
+                  minimal
+                />
+              </Tooltip>
+              <Tooltip content="Add new column" position="bottom">
+                <Button
+                  icon="plus"
+                  onClick={handleAddColumn}
+                  minimal
+                />
+              </Tooltip>
+              <Popover
+                content={
+                  <Menu>
+                    <MenuItem
+                      icon="arrow-left"
+                      text="Insert Left"
+                      onClick={() => handleInsertColumnLeft(selectedColForOps!)}
+                    />
+                    <MenuItem
+                      icon="arrow-right"
+                      text="Insert Right"
+                      onClick={() => handleInsertColumnRight(selectedColForOps!)}
+                    />
+                    <Divider />
+                    <MenuItem
+                      icon="trash"
+                      text="Delete Column"
+                      intent="danger"
+                      onClick={() => handleDeleteColumn(selectedColForOps!)}
+                      disabled={element.columns <= 1}
+                    />
+                  </Menu>
+                }
+                position="bottom"
+                minimal
               >
-                <i className="fas fa-minus text-xs"></i>
-              </button>
-              <span className="w-8 text-center font-mono text-sm">
-                {element.columns}
-              </span>
-              <button
-                className="w-8 h-8 rounded bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100"
-                onClick={handleAddColumn}
-              >
-                <i className="fas fa-plus text-xs"></i>
-              </button>
-              <button
-                className="ml-2 w-8 h-8 rounded bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100"
-                onClick={() => {
-                  const indices = getSelectedCellIndices();
-                  if (indices) {
-                    setSelectedColForOps(indices[1]);
-                    setShowColumnOperations(true);
-                    setShowRowOperations(false);
-                  }
-                }}
-              >
-                <i className="fas fa-ellipsis-h text-xs"></i>
-              </button>
-            </div>
+                <Button icon="more" minimal />
+              </Popover>
+            </ButtonGroup>
           </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-700">Header Row</span>
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                className="form-checkbox h-4 w-4 text-primary rounded"
-                checked={element.headerRow}
-                onChange={(e) => element.set({ headerRow: e.target.checked })}
-              />
-            </label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Label className={Classes.TEXT_MUTED} style={{ marginBottom: 0, marginRight: 8 }}>Header Row</Label>
+            <Switch
+              checked={element.headerRow}
+              onChange={(e) => element.set({ headerRow: e.currentTarget.checked })}
+              large
+              style={{ margin: 0 }}
+            />
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Cell Styling Controls */}
-      <div className="bg-gray-50 p-3 rounded-lg">
-        <h3 className="text-xs uppercase text-gray-500 font-medium mb-2">
-          Cell Styling
-        </h3>
-        {element.selectedCells.length > 0 && (
-          <div className="space-y-3">
+      <Card className="bp4-elevation-2" style={{ 
+        marginBottom: '16px',
+        backgroundColor: Colors.LIGHT_GRAY5
+      }}>
+        <H5 className={Classes.HEADING} style={{ 
+          marginBottom: '16px',
+          color: Colors.DARK_GRAY1
+        }}>Cell Styling</H5>
+        <ControlGroup fill={true} vertical={true} style={{ gap: '16px' }}>
+          {element.selectedCells.length > 0 && (
             <div>
-              <label className="text-sm text-gray-700 block mb-1">
-                Cell Background
-              </label>
-              <div className="flex items-center space-x-2">
-                <div
-                  className="w-8 h-8 rounded border border-gray-300 cursor-pointer"
-                  style={{
-                    backgroundColor:
-                      element.selectedCells.length === 1
-                        ? element.cellBackgrounds?.[element.selectedCells[0]] ||
-                          "#ffffff"
-                        : "#ffffff",
-                  }}
-                  onClick={() => {
-                    const newBackgrounds = { ...element.cellBackgrounds };
-                    element.selectedCells.forEach((cellKey: any) => {
-                      newBackgrounds[cellKey] =
-                        element.selectedCells.length === 1
-                          ? undefined
-                          : "#ffffff";
-                    });
-                    element.set({ cellBackgrounds: newBackgrounds });
-                  }}
-                />
+              <Label className={Classes.TEXT_MUTED}>Cell Background</Label>
+              <ControlGroup>
                 <ColorPicker
-                  value={
-                    element.selectedCells.length === 1
-                      ? element.cellBackgrounds?.[element.selectedCells[0]] ||
-                        "#ffffff"
-                      : "#ffffff"
-                  }
+                  value={element.selectedCells.length === 1
+                    ? element.cellBackgrounds?.[element.selectedCells[0]] || Colors.WHITE
+                    : Colors.WHITE}
                   onChange={(color) => {
                     const newBackgrounds = { ...element.cellBackgrounds };
                     element.selectedCells.forEach((cellKey: any) => {
@@ -379,275 +254,170 @@ const TableToolbar = observer(({ store }: { store: any }) => {
                   }}
                   store={store}
                 />
-              </div>
+              </ControlGroup>
             </div>
-          </div>
-        )}
-
-        <div className="space-y-3">
-          <div>
-            <label className="text-sm text-gray-700 block mb-1">
-              Cell Background
-            </label>
-            <div className="flex items-center space-x-2">
-              <div
-                className="w-8 h-8 rounded border border-gray-300"
-                style={{ backgroundColor: getCellBackgroundColor() }}
-              ></div>
-              <ColorPicker
-                value={getCellBackgroundColor()}
-                onChange={handleCellBackgroundChange}
-                store={store}
-              />
-            </div>
-          </div>
+          )}
 
           <div>
-            <label className="text-sm text-gray-700 block mb-1">
-              Cell Padding
-            </label>
-            <div className="flex items-center">
-              <input
-                type="range"
-                min="0"
-                max="20"
+            <Label className={Classes.TEXT_MUTED}>Cell Padding</Label>
+            <ControlGroup>
+              <Slider
+                min={0}
+                max={20}
                 value={element.cellPadding}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                onChange={(e) =>
-                  handleCellPaddingChange(parseInt(e.target.value))
-                }
+                onChange={(value) => handleCellPaddingChange(value)}
+                labelRenderer={false}
+                className={Classes.FILL}
               />
-              <span className="w-10 text-center font-mono text-sm ml-2">
-                {element.cellPadding}px
-              </span>
-            </div>
+              <NumericInput
+                value={element.cellPadding}
+                onValueChange={(value) => handleCellPaddingChange(value)}
+                min={0}
+                max={20}
+                buttonPosition="none"
+                style={{ width: '60px' }}
+              />
+            </ControlGroup>
           </div>
 
           <div>
-            <label className="text-sm text-gray-700 block mb-1">
-              Border Width
-            </label>
-            <div className="flex items-center">
-              <input
-                type="range"
-                min="0"
-                max="5"
+            <Label className={Classes.TEXT_MUTED}>Border Width</Label>
+            <ControlGroup>
+              <Slider
+                min={0}
+                max={5}
                 value={element.borderWidth}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                onChange={(e) =>
-                  handleBorderWidthChange(parseInt(e.target.value))
-                }
+                onChange={(value) => handleBorderWidthChange(value)}
+                labelRenderer={false}
+                className={Classes.FILL}
               />
-              <span className="w-10 text-center font-mono text-sm ml-2">
-                {element.borderWidth}px
-              </span>
-            </div>
+              <NumericInput
+                value={element.borderWidth}
+                onValueChange={(value) => handleBorderWidthChange(value)}
+                min={0}
+                max={5}
+                buttonPosition="none"
+                style={{ width: '60px' }}
+              />
+            </ControlGroup>
           </div>
 
           <div>
-            <label className="text-sm text-gray-700 block mb-1">
-              Border Color
-            </label>
-            <div className="flex items-center space-x-2">
-              <div
-                className="w-8 h-8 rounded border border-gray-300"
-                style={{ backgroundColor: element.borderColor }}
-              ></div>
+            <Label className={Classes.TEXT_MUTED}>Border Color</Label>
+            <ControlGroup>
               <ColorPicker
                 value={element.borderColor}
                 onChange={handleBorderColorChange}
                 store={store}
               />
-            </div>
+            </ControlGroup>
           </div>
-        </div>
-      </div>
+        </ControlGroup>
+      </Card>
 
       {/* Text Formatting Controls */}
-      <div className="bg-gray-50 p-3 rounded-lg">
-        <h3 className="text-xs uppercase text-gray-500 font-medium mb-2">
-          Text Formatting
-        </h3>
-
-        <div className="space-y-3">
-          <div className="flex space-x-1">
-            <button
-              className={`flex-1 flex items-center justify-center p-2 rounded ${
-                isBold
-                  ? "bg-primary text-white"
-                  : "bg-white border border-gray-200 hover:bg-gray-100"
-              }`}
-              onClick={handleTextBold}
-            >
-              <i className="fas fa-bold"></i> Bold
-            </button>
-            <button
-              className={`flex-1 flex items-center justify-center p-2 rounded ${
-                isItalic
-                  ? "bg-primary text-white"
-                  : "bg-white border border-gray-200 hover:bg-gray-100"
-              }`}
-              onClick={handleTextItalic}
-            >
-              <i className="fas fa-italic"></i> Italic
-            </button>
-            <button
-              className={`flex-1 flex items-center justify-center p-2 rounded ${
-                isUnderlined
-                  ? "bg-primary text-white"
-                  : "bg-white border border-gray-200 hover:bg-gray-100"
-              }`}
-              onClick={handleTextUnderline}
-            >
-              <i className="fas fa-underline"></i> Underline
-            </button>
+      <Card className="bp4-elevation-2" style={{ 
+        backgroundColor: Colors.LIGHT_GRAY5
+      }}>
+        <H5 className={Classes.HEADING} style={{ 
+          marginBottom: '16px',
+          color: Colors.DARK_GRAY1
+        }}>Text Formatting</H5>
+        <ControlGroup fill={true} vertical={true} style={{ gap: '16px' }}>
+          <div>
+            <Label className={Classes.TEXT_MUTED}>Text Style</Label>
+            <ButtonGroup>
+              <Tooltip content="Bold" position="bottom">
+                <Button
+                  icon="bold"
+                  active={isBold}
+                  onClick={handleTextBold}
+                  minimal
+                />
+              </Tooltip>
+              <Tooltip content="Italic" position="bottom">
+                <Button
+                  icon="italic"
+                  active={isItalic}
+                  onClick={handleTextItalic}
+                  minimal
+                />
+              </Tooltip>
+              <Tooltip content="Underline" position="bottom">
+                <Button
+                  icon="underline"
+                  active={isUnderlined}
+                  onClick={handleTextUnderline}
+                  minimal
+                />
+              </Tooltip>
+            </ButtonGroup>
           </div>
 
           <div>
-            <label className="text-sm text-gray-700 block mb-1">
-              Text Alignment
-            </label>
-            <div className="flex space-x-1">
-              <button
-                className={`flex-1 flex items-center justify-center p-2 rounded ${
-                  getTextAlign() === "left"
-                    ? "bg-primary text-white"
-                    : "bg-white border border-gray-200 hover:bg-gray-100"
-                }`}
-                onClick={() => handleTextAlign("left")}
-              >
-                <i className="fas fa-align-left"></i> Align Left
-              </button>
-              <button
-                className={`flex-1 flex items-center justify-center p-2 rounded ${
-                  getTextAlign() === "center"
-                    ? "bg-primary text-white"
-                    : "bg-white border border-gray-200 hover:bg-gray-100"
-                }`}
-                onClick={() => handleTextAlign("center")}
-              >
-                <i className="fas fa-align-center"></i> Align Center
-              </button>
-              <button
-                className={`flex-1 flex items-center justify-center p-2 rounded ${
-                  getTextAlign() === "right"
-                    ? "bg-primary text-white"
-                    : "bg-white border border-gray-200 hover:bg-gray-100"
-                }`}
-                onClick={() => handleTextAlign("right")}
-              >
-                <i className="fas fa-align-right"></i> Align Right
-              </button>
-            </div>
+            <Label className={Classes.TEXT_MUTED}>Text Alignment</Label>
+            <ButtonGroup>
+              <Tooltip content="Align Left" position="bottom">
+                <Button
+                  icon="align-left"
+                  active={getTextAlign() === "left"}
+                  onClick={() => handleTextAlign("left")}
+                  minimal
+                />
+              </Tooltip>
+              <Tooltip content="Align Center" position="bottom">
+                <Button
+                  icon="align-center"
+                  active={getTextAlign() === "center"}
+                  onClick={() => handleTextAlign("center")}
+                  minimal
+                />
+              </Tooltip>
+              <Tooltip content="Align Right" position="bottom">
+                <Button
+                  icon="align-right"
+                  active={getTextAlign() === "right"}
+                  onClick={() => handleTextAlign("right")}
+                  minimal
+                />
+              </Tooltip>
+            </ButtonGroup>
           </div>
 
           <div>
-            <label className="text-sm text-gray-700 block mb-1">
-              Font Size
-            </label>
-            <div className="flex items-center">
-              <input
-                type="range"
-                min="8"
-                max="40"
+            <Label className={Classes.TEXT_MUTED}>Font Size</Label>
+            <ControlGroup>
+              <Slider
+                min={8}
+                max={40}
                 value={getFontSize()}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                onChange={(e) => handleFontSizeChange(parseInt(e.target.value))}
+                onChange={(value) => handleFontSizeChange(value)}
+                labelRenderer={false}
+                className={Classes.FILL}
               />
-              <span className="w-12 text-center font-mono text-sm ml-2">
-                {getFontSize()}px
-              </span>
-            </div>
+              <NumericInput
+                value={getFontSize()}
+                onValueChange={(value) => handleFontSizeChange(value)}
+                min={8}
+                max={40}
+                buttonPosition="none"
+                style={{ width: '60px' }}
+              />
+            </ControlGroup>
           </div>
 
           <div>
-            <label className="text-sm text-gray-700 block mb-1">
-              Text Color
-            </label>
-            <div className="flex items-center space-x-2">
-              <div
-                className="w-8 h-8 rounded border border-gray-300"
-                style={{ backgroundColor: getTextColor() }}
-              ></div>
+            <Label className={Classes.TEXT_MUTED}>Text Color</Label>
+            <ControlGroup>
               <ColorPicker
                 value={getTextColor()}
                 onChange={handleTextColorChange}
                 store={store}
               />
-            </div>
+            </ControlGroup>
           </div>
-        </div>
-      </div>
-
-      {/* Row Operations Popover */}
-      {showRowOperations && selectedRowForOps !== null && (
-        <div className="absolute top-0 right-full mr-2 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
-          <div className="p-2 border-b border-gray-200">
-            <div className="text-xs text-gray-500 font-medium">
-              Row Operations
-            </div>
-          </div>
-          <div className="p-1.5">
-            <button
-              className="flex items-center space-x-2 w-full text-left px-2 py-1.5 text-sm hover:bg-gray-100 rounded"
-              onClick={() => handleInsertRowAbove(selectedRowForOps)}
-            >
-              <i className="fas fa-arrow-up text-gray-600"></i>
-              <span>Insert Above</span>
-            </button>
-            <button
-              className="flex items-center space-x-2 w-full text-left px-2 py-1.5 text-sm hover:bg-gray-100 rounded"
-              onClick={() => handleInsertRowBelow(selectedRowForOps)}
-            >
-              <i className="fas fa-arrow-down text-gray-600"></i>
-              <span>Insert Below</span>
-            </button>
-            <button
-              className="flex items-center space-x-2 w-full text-left px-2 py-1.5 text-sm hover:bg-gray-100 rounded text-red-600"
-              onClick={() => handleDeleteRow(selectedRowForOps)}
-              disabled={element.rows <= 1}
-            >
-              <i className="fas fa-trash-alt"></i>
-              <span>Delete Row</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Column Operations Popover */}
-      {showColumnOperations && selectedColForOps !== null && (
-        <div className="absolute top-0 right-full mr-2 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
-          <div className="p-2 border-b border-gray-200">
-            <div className="text-xs text-gray-500 font-medium">
-              Column Operations
-            </div>
-          </div>
-          <div className="p-1.5">
-            <button
-              className="flex items-center space-x-2 w-full text-left px-2 py-1.5 text-sm hover:bg-gray-100 rounded"
-              onClick={() => handleInsertColumnLeft(selectedColForOps)}
-            >
-              <i className="fas fa-arrow-left text-gray-600"></i>
-              <span>Insert Left</span>
-            </button>
-            <button
-              className="flex items-center space-x-2 w-full text-left px-2 py-1.5 text-sm hover:bg-gray-100 rounded"
-              onClick={() => handleInsertColumnRight(selectedColForOps)}
-            >
-              <i className="fas fa-arrow-right text-gray-600"></i>
-              <span>Insert Right</span>
-            </button>
-            <button
-              className="flex items-center space-x-2 w-full text-left px-2 py-1.5 text-sm hover:bg-gray-100 rounded text-red-600"
-              onClick={() => handleDeleteColumn(selectedColForOps)}
-              disabled={element.columns <= 1}
-            >
-              <i className="fas fa-trash-alt"></i>
-              <span>Delete Column</span>
-            </button>
-          </div>
-        </div>
-      )}
+        </ControlGroup>
+      </Card>
     </div>
   );
 });

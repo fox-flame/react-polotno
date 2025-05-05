@@ -4,7 +4,7 @@ import { observer } from "mobx-react-lite";
 import { SectionTab } from "polotno/side-panel";
 import { Button } from "@blueprintjs/core";
 import FaTable from "@meronex/icons/fa/FaTable";
-import { createTableElement, handleAddTable } from "./create-table-element";
+import { handleAddTable } from "./create-table-element";
 import TableToolbar from "./polotno-table/TableToolbar";
 
 // define the new custom section
@@ -24,18 +24,10 @@ export const TableSection = {
         <Button
           fill
           onClick={() => {
-            createTableElement(store);
-          }}
-        >
-          Create SVG table
-        </Button>
-        <Button
-          fill
-          onClick={() => {
             handleAddTable(store);
           }}
         >
-          Create Custom table
+          Create table
         </Button>
 
         {element && element.type === "table" && element.custom.isTable && (

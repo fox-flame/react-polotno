@@ -24,8 +24,6 @@ unstable_registerShapeModel(
   // Model definition
   {
     type: "table",
-    width: 400,
-    height: 200,
     rotation: 0,
     opacity: 1,
     rows: 3,
