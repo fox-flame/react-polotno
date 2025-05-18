@@ -42,6 +42,7 @@ unstable_registerShapeModel(
     columnWidths: types.frozen([]),
     rowHeights: types.frozen([]),
     cellBackgrounds: types.frozen({}),
+    cellTextColors: types.frozen({}),
   },
   // Extend function
   (self: any) => {

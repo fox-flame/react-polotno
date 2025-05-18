@@ -5,20 +5,24 @@ import { Group, Rect, Text, Line } from "react-konva";
 import { unstable_registerShapeComponent } from "polotno/config";
 import { Html } from "react-konva-utils";
 import ContentEditable from "react-contenteditable";
-
-
+import { Icon, IconSize } from "@blueprintjs/core";
 
 // TableElement component for rendering a table on the canvas
 const TableElement = observer(
   ({ element, store }: { element: any; store: any }) => {
     const [editingCell, setEditingCell] = useState<string | null>(null);
-    const [showDrag, setShowDrag] = useState(true)
+    const [showDrag, setShowDrag] = useState(false);
+    const [overlayActive, setOverlayActive] = useState(true);
     const htmlContainerRef = useRef<HTMLDivElement>(null);
-    const isShowDrag = useMemo(()=> showDrag && store.selectedElements?.find((el:any)=>el.id === 'cp-custom-table' && el.type === 'table'),[showDrag,store.selectedElements])
+    const isShowDrag = useMemo(
+      () =>
+        showDrag &&
+        store.selectedElements?.length === 1 &&
+        store.selectedElements?.find((el: any) => el.type === "table"),
+      [showDrag, store.selectedElements]
+    );
 
     const tableRef = useRef<any>();
-
-
 
     useEffect(() => {
       if (!editingCell) return;
@@ -29,30 +33,12 @@ const TableElement = observer(
         ) {
           setEditingCell(null);
         }
-
-        // if(store.selectedElements?.find((el:any)=>el.id === 'cp-custom-table' && el.type === 'table')){
-        //   setShowDrag(false)
-        // }
       }
       document.addEventListener("mousedown", handleClickOutside);
       return () => {
         document.removeEventListener("mousedown", handleClickOutside);
       };
     }, [editingCell]);
-
-    const getColorBrightness = (color: string) => {
-      // For transparent, return 1 (light)
-      if (color === "transparent") return 1;
-
-      // Convert hex to RGB
-      const hex = color.replace("#", "");
-      const r = parseInt(hex.substr(0, 2), 16) / 255;
-      const g = parseInt(hex.substr(2, 2), 16) / 255;
-      const b = parseInt(hex.substr(4, 2), 16) / 255;
-
-      // Calculate relative luminance
-      return 0.299 * r + 0.587 * g + 0.114 * b;
-    };
 
     const [hoveredResizer, setHoveredResizer] = useState<{
       type: string;
@@ -64,7 +50,6 @@ const TableElement = observer(
       startPos: number;
       sizes: number[];
     } | null>(null);
-    
 
     // Calculate row heights and column widths
     const calculateTableDimensions = () => {
@@ -141,11 +126,7 @@ const TableElement = observer(
     };
 
     // Handle text change
-    const handleTextChange = (
-      e: any,
-      row: number,
-      col: number
-    ) => {
+    const handleTextChange = (e: any, row: number, col: number) => {
       if (element.setText) {
         element.setText(row, col, e.target.value);
       } else if (element.set) {
@@ -205,9 +186,15 @@ const TableElement = observer(
         });
 
         if (type === "column") {
-          element.set({ columnWidths: newSizes });
+          element.set({
+            columnWidths: newSizes,
+            width: newSizes.reduce((sum, w) => sum + w, 0),
+          });
         } else {
-          element.set({ rowHeights: newSizes });
+          element.set({
+            rowHeights: newSizes,
+            height: newSizes.reduce((sum, h) => sum + h, 0),
+          });
         }
       };
 
@@ -219,11 +206,6 @@ const TableElement = observer(
 
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
-    };
-
-    // Calculate cell position and dimensions
-    const getCellPadding = () => {
-      return element.cellPadding || 8; // Default padding of 8px
     };
 
     const getCellProps = (row: number, col: number) => {
@@ -358,8 +340,8 @@ const TableElement = observer(
             element.cellBackgrounds?.[cellKey] ||
             cellStyle.backgroundColor ||
             (isHeader ? "#f3f4f6" : "#ffffff");
-          const textColor =
-            getColorBrightness(backgroundColor) > 0.5 ? "#000000" : "#ffffff";
+
+          const textColor = element.cellTextColors?.[cellKey] || "#000000";
           const fontWeight =
             cellStyle.fontWeight || (isHeader ? "bold" : "normal");
           const fontStyle = cellStyle.fontStyle || "normal";
@@ -380,54 +362,58 @@ const TableElement = observer(
                 perfectDrawEnabled={false}
               />
               {editingCell && editingCell === cellKey && (
-                   <Html>
-                    <div
-                      ref={htmlContainerRef}
+                <Html>
+                  <div
+                    ref={htmlContainerRef}
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      width: width,
+                      height: height,
+                      transform: `rotate(${element.rotation}deg)`,
+                      transformOrigin: "center center",
+                    }}
+                  >
+                    <ContentEditable
+                      html={text || ""}
+                      onChange={(e) => handleTextChange(e, row, col)}
+                      onBlur={(e) =>
+                        handleCellEditComplete(row, col, e.target.innerText)
+                      }
+                      className="data-input"
                       style={{
-                        position: "absolute",
-                        left: 0,
-                        top: 0,
-                        width: width,
-                        height: height,
-                        transform: `rotate(${element.rotation}deg)`,
-                        transformOrigin: "center center",
+                        width: "100%",
+                        height: "100%",
+                        border: `${borderWidth}px solid rgb(0, 123, 255)`,
+                        padding: (element.cellPadding || 8) + "px",
+                        margin: 0,
+                        background:
+                          element.cellBackgrounds?.[`${row},${col}`] ||
+                          backgroundColor,
+                        outline: "none",
+                        textAlign: textAlign,
+                        verticalAlign: "middle",
+                        fontSize: `${fontSize || 14}px`,
+                        resize: "none",
+                        overflow: "hidden",
+                        cursor: "text",
+                        color: textColor,
+                        boxSizing: "border-box",
+                        wordWrap: "break-word",
+                        wordBreak: "break-all",
+                        whiteSpace: "pre-wrap",
                       }}
-                    >
-                      <ContentEditable
-                        html={text || ""}
-                        onChange={e => handleTextChange(e, row, col)}
-                        onBlur={e => handleCellEditComplete(row, col, e.target.innerText)}
-                        className="data-input"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          border: `${borderWidth}px solid rgb(0, 123, 255)`,
-                          padding: (element.cellPadding || 8) + "px",
-                          margin: 0,
-                          background: element.cellBackgrounds?.[`${row},${col}`] || backgroundColor,
-                          outline: "none",
-                          textAlign: textAlign,
-                          verticalAlign: "middle",
-                          fontSize: "14px",
-                          resize: "none",
-                          overflow: "hidden",
-                          cursor: "text",
-                          color: textColor,
-                          boxSizing: "border-box",
-                          wordWrap: "break-word",
-                          wordBreak: "break-all",
-                          whiteSpace: "pre-wrap",
-                        }}
-                        onPaste={e => {
-                          e.preventDefault();
-                          const text = e.clipboardData.getData('text/plain');
-                          document.execCommand('insertText', false, text);
-                        }}
-                      />
-                    </div>
-                  </Html>
+                      onPaste={(e) => {
+                        e.preventDefault();
+                        const text = e.clipboardData.getData("text/plain");
+                        document.execCommand("insertText", false, text);
+                      }}
+                    />
+                  </div>
+                </Html>
               )}
-              
+
               {/* {isSelected && (
                 <Rect
                   width={width}
@@ -473,8 +459,7 @@ const TableElement = observer(
       return cells;
     };
 
-    const handleDrag = (event:any) => {
-      console.log('drag',event)
+    const handleDrag = (event: any) => {
       if (!element.isDragging) return;
       element.set({
         x: event.target.x(),
@@ -482,87 +467,134 @@ const TableElement = observer(
       });
     };
 
-
-
     const startDrag = () => {
       element.set({ isDragging: true });
     };
-  
+
     const stopDrag = () => {
       element.set({ isDragging: false });
     };
 
-    const handleTransform = (e:any) => {
+    const handleTransform = (e: any) => {
       const node = e.currentTarget;
-      const rect = node.getClientRect()
-      
+      const scaleX = node.scaleX();
+      const scaleY = node.scaleY();
 
+      // Reset scale to 1 so future transforms are relative to the new size
+      node.scaleX(1);
+      node.scaleY(1);
+
+      // Scale column widths and row heights
+      const newColWidths = colWidths.map((w: number) => w * scaleX);
+      const newRowHeights = rowHeights.map((h: number) => h * scaleY);
+
+      // Set width/height to the sum of the new arrays
       element.set({
-        width:Math.round(rect.width) - 10,
-        height:Math.round(rect.height) - 10
-      })
+        x: node.x(),
+        y: node.y(),
+        width: newColWidths.reduce((sum: number, w: number) => sum + w, 0),
+        height: newRowHeights.reduce((sum: number, h: number) => sum + h, 0),
+        columnWidths: newColWidths,
+        rowHeights: newRowHeights,
+        rotation: node.rotation?.() ?? 0,
+      });
     };
 
-    return (    
-        <Group
-          ref={tableRef}
-         
-          // remember to use "element" name. Polotno will use it internally to find correct node
-          name="element"
-          // also it is important to pass id
-          // so polotno can automatically do selection
-          id={element.id}
-          x={element.x}
-          y={element.y}
-          width={element.width}
-          height={element.height}
-          draggable={true}
-          onDragStart={startDrag}
-          onDragMove={handleDrag}
-          onDragEnd={stopDrag}
-          onClick={() => {
-            setShowDrag(true)
-            store.selectElements(['cp-custom-table'])
-          }}
-          onTransform={handleTransform}
-        >
-          {renderCells()}
-          {renderColumnResizers()}
-          {renderRowResizers()}
+    return (
+      <Group
+        ref={tableRef}
+        // remember to use "element" name. Polotno will use it internally to find correct node
+        name="element"
+        // also it is important to pass id
+        // so polotno can automatically do selection
+        id={element.id}
+        x={element.x}
+        y={element.y}
+        width={element.width}
+        height={element.height}
+        draggable={true}
+        onDragStart={startDrag}
+        onDragMove={handleDrag}
+        onDragEnd={stopDrag}
+        onClick={() => {
+          setOverlayActive(true);
+          store.selectElements([element.id]);
+        }}
+        onTransform={handleTransform}
+        onMouseEnter={(e) => {
+          const stage = e.target.getStage();
+          if (stage) stage.container().style.cursor = "move";
+        }}
+        onMouseLeave={(e) => {
+          const stage = e.target.getStage();
+          if (stage) stage.container().style.cursor = "default";
+        }}
+        onDblClick={(e) => {
+          e.cancelBubble = true;
+          if (tableRef.current && tableRef.current.startDrag) {
+            tableRef.current.startDrag();
+          }
+        }}
+      >
+        {renderCells()}
 
-          {/* Bottom Center Drag Handle */}
-         {
-          // isShowDrag &&  <Group
-          // >
-          //   <Rect
-          //     x={element.width / 2 - 30}
-          //     y={
-          //       rowHeights.reduce((sum: any, height: any) => sum + height, 0) +
-          //       5
-          //     }
-          //     width={60}
-          //     height={15}
-          //     fill="rgba(0, 0, 0, 0.2)"
-          //     cornerRadius={5}
-          //     onMouseDown={startDrag}
-          //     onMouseUp={stopDrag}
-          //   />
-          //   <Text
-          //     x={element.width / 2 - 30}
-          //     y={
-          //       rowHeights.reduce((sum: any, height: any) => sum + height, 0) +
-          //       8
-          //     }
-          //     width={60}
-          //     height={15}
-          //     text="DRAG"
-          //     fontSize={10}
-          //     fill="white"
-          //     align="center"
-          //   />
-          // </Group>
-         }
-        </Group> 
+        {/* Bottom Center Drag Handle */}
+        {isShowDrag && (
+          <Group
+            x={element.width / 2 - 16}
+            y={rowHeights.reduce((sum: number, h: number) => sum + h, 0) + 10}
+          >
+            <Html>
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  background: "#fff",
+                  borderRadius: "50%",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.12)",
+                  border: "3px solid #3B82F6",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "move",
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  transform: `rotate(${element.rotation}deg)`,
+                }}
+                onMouseDown={(e) => {
+                  startDrag();
+                  if (tableRef.current && tableRef.current.startDrag) {
+                    tableRef.current.startDrag();
+                  }
+                }}
+              >
+                <Icon icon="move" color="#666" size={IconSize.STANDARD} />
+              </div>
+            </Html>
+          </Group>
+        )}
+
+        {overlayActive && (
+          <Rect
+            x={0}
+            y={0}
+            width={element.width}
+            height={rowHeights.reduce((sum: number, h: number) => sum + h, 0)}
+            fill="transparent"
+            listening={true}
+            onClick={() => setOverlayActive(false)}
+            onDblClick={(e) => {
+              if (tableRef.current && tableRef.current.startDrag) {
+                tableRef.current.startDrag();
+              }
+              setOverlayActive(false);
+            }}
+          />
+        )}
+        {renderColumnResizers()}
+        {renderRowResizers()}
+      </Group>
     );
   }
 );

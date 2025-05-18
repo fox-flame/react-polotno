@@ -1,14 +1,14 @@
 "use client";
 import React, { useState } from "react";
 import { observer } from "mobx-react-lite";
-import { 
-  NumericInput, 
-  Button, 
-  Card, 
-  H5, 
-  Label, 
-  Switch, 
-  Slider, 
+import {
+  NumericInput,
+  Button,
+  Card,
+  H5,
+  Label,
+  Switch,
+  Slider,
   Colors,
   Tooltip,
   Popover,
@@ -17,21 +17,21 @@ import {
   Divider,
   Classes,
   ControlGroup,
-  ButtonGroup} from '@blueprintjs/core';
+  ButtonGroup,
+} from "@blueprintjs/core";
 import ColorPicker from "polotno/toolbar/color-picker";
 import { useTableActions } from "./hooks/useTableActions";
 
-const TableToolbar = observer(({ store }: { store: any }) => {
+export const TableToolbar = observer(({ store }: { store: any }) => {
   const element = store.selectedElements[0];
 
-  const [showRowOperations, setShowRowOperations] = useState(false);
-  const [showColumnOperations, setShowColumnOperations] = useState(false);
   const [selectedRowForOps, setSelectedRowForOps] = useState<number | null>(
     null
   );
   const [selectedColForOps, setSelectedColForOps] = useState<number | null>(
     null
   );
+  const [fontSize, setFontSize] = useState(14);
 
   // Use the custom hook for all table actions
   const {
@@ -101,26 +101,52 @@ const TableToolbar = observer(({ store }: { store: any }) => {
     return style.backgroundColor || "#ffffff";
   };
 
-  console.log("element", element);
+  // Update selected row/col when cells are selected
+  React.useEffect(() => {
+    if (element?.selectedCells?.length > 0) {
+      const [row, col] = element.selectedCells[0].split(",").map(Number);
+      setSelectedRowForOps(row);
+      setSelectedColForOps(col);
+    }
+  }, [element?.selectedCells]);
+
+  // Update font size when selection changes
+  React.useEffect(() => {
+    const size = getFontSize();
+    setFontSize(size);
+  }, [element?.selectedCells]);
 
   return (
-    <div className="bp4-elevation-1" style={{ 
-      padding: '16px', 
-      borderRadius: '4px',
-      backgroundColor: Colors.WHITE
-    }}>
+    <div
+      className="bp4-elevation-1"
+      style={{
+        padding: "16px",
+        borderRadius: "4px",
+        backgroundColor: Colors.WHITE,
+      }}
+    >
       {/* Table Structure Controls */}
-      <Card className="bp4-elevation-2" style={{ 
-        marginBottom: '16px',
-        backgroundColor: Colors.LIGHT_GRAY5
-      }}>
-      <H5 className={Classes.HEADING} style={{ 
-          marginBottom: '16px',
-          color: Colors.DARK_GRAY1
-        }}>Table Structure</H5>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <Card
+        className="bp4-elevation-2"
+        style={{
+          marginBottom: "16px",
+          backgroundColor: Colors.LIGHT_GRAY5,
+        }}
+      >
+        <H5
+          className={Classes.HEADING}
+          style={{
+            marginBottom: "16px",
+            color: Colors.DARK_GRAY1,
+          }}
+        >
+          Table Structure
+        </H5>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <div>
-            <Label className={Classes.TEXT_MUTED} style={{ marginBottom: 4 }}>Rows</Label>
+            <Label className={Classes.TEXT_MUTED} style={{ marginBottom: 4 }}>
+              Rows
+            </Label>
             <ButtonGroup>
               <Tooltip content="Remove selected row" position="bottom">
                 <Button
@@ -131,11 +157,7 @@ const TableToolbar = observer(({ store }: { store: any }) => {
                 />
               </Tooltip>
               <Tooltip content="Add new row" position="bottom">
-                <Button
-                  icon="plus"
-                  onClick={handleAddRow}
-                  minimal
-                />
+                <Button icon="plus" onClick={handleAddRow} minimal />
               </Tooltip>
               <Popover
                 content={
@@ -143,20 +165,31 @@ const TableToolbar = observer(({ store }: { store: any }) => {
                     <MenuItem
                       icon="arrow-up"
                       text="Insert Above"
-                      onClick={() => handleInsertRowAbove(selectedRowForOps!)}
+                      onClick={() =>
+                        selectedRowForOps !== null &&
+                        handleInsertRowAbove(selectedRowForOps)
+                      }
+                      disabled={selectedRowForOps === null}
                     />
                     <MenuItem
                       icon="arrow-down"
                       text="Insert Below"
-                      onClick={() => handleInsertRowBelow(selectedRowForOps!)}
+                      onClick={() =>
+                        selectedRowForOps !== null &&
+                        handleInsertRowBelow(selectedRowForOps)
+                      }
+                      disabled={selectedRowForOps === null}
                     />
                     <Divider />
                     <MenuItem
                       icon="trash"
                       text="Delete Row"
                       intent="danger"
-                      onClick={() => handleDeleteRow(selectedRowForOps!)}
-                      disabled={element.rows <= 1}
+                      onClick={() =>
+                        selectedRowForOps !== null &&
+                        handleDeleteRow(selectedRowForOps)
+                      }
+                      disabled={element.rows <= 1 || selectedRowForOps === null}
                     />
                   </Menu>
                 }
@@ -168,7 +201,9 @@ const TableToolbar = observer(({ store }: { store: any }) => {
             </ButtonGroup>
           </div>
           <div>
-            <Label className={Classes.TEXT_MUTED} style={{ marginBottom: 4 }}>Columns</Label>
+            <Label className={Classes.TEXT_MUTED} style={{ marginBottom: 4 }}>
+              Columns
+            </Label>
             <ButtonGroup>
               <Tooltip content="Remove selected column" position="bottom">
                 <Button
@@ -179,11 +214,7 @@ const TableToolbar = observer(({ store }: { store: any }) => {
                 />
               </Tooltip>
               <Tooltip content="Add new column" position="bottom">
-                <Button
-                  icon="plus"
-                  onClick={handleAddColumn}
-                  minimal
-                />
+                <Button icon="plus" onClick={handleAddColumn} minimal />
               </Tooltip>
               <Popover
                 content={
@@ -191,20 +222,33 @@ const TableToolbar = observer(({ store }: { store: any }) => {
                     <MenuItem
                       icon="arrow-left"
                       text="Insert Left"
-                      onClick={() => handleInsertColumnLeft(selectedColForOps!)}
+                      onClick={() =>
+                        selectedColForOps !== null &&
+                        handleInsertColumnLeft(selectedColForOps)
+                      }
+                      disabled={selectedColForOps === null}
                     />
                     <MenuItem
                       icon="arrow-right"
                       text="Insert Right"
-                      onClick={() => handleInsertColumnRight(selectedColForOps!)}
+                      onClick={() =>
+                        selectedColForOps !== null &&
+                        handleInsertColumnRight(selectedColForOps)
+                      }
+                      disabled={selectedColForOps === null}
                     />
                     <Divider />
                     <MenuItem
                       icon="trash"
                       text="Delete Column"
                       intent="danger"
-                      onClick={() => handleDeleteColumn(selectedColForOps!)}
-                      disabled={element.columns <= 1}
+                      onClick={() =>
+                        selectedColForOps !== null &&
+                        handleDeleteColumn(selectedColForOps)
+                      }
+                      disabled={
+                        element.columns <= 1 || selectedColForOps === null
+                      }
                     />
                   </Menu>
                 }
@@ -215,11 +259,18 @@ const TableToolbar = observer(({ store }: { store: any }) => {
               </Popover>
             </ButtonGroup>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Label className={Classes.TEXT_MUTED} style={{ marginBottom: 0, marginRight: 8 }}>Header Row</Label>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Label
+              className={Classes.TEXT_MUTED}
+              style={{ marginBottom: 0, marginRight: 8 }}
+            >
+              Header Row
+            </Label>
             <Switch
               checked={element.headerRow}
-              onChange={(e) => element.set({ headerRow: e.currentTarget.checked })}
+              onChange={(e) =>
+                element.set({ headerRow: e.currentTarget.checked })
+              }
               large
               style={{ margin: 0 }}
             />
@@ -228,23 +279,34 @@ const TableToolbar = observer(({ store }: { store: any }) => {
       </Card>
 
       {/* Cell Styling Controls */}
-      <Card className="bp4-elevation-2" style={{ 
-        marginBottom: '16px',
-        backgroundColor: Colors.LIGHT_GRAY5
-      }}>
-        <H5 className={Classes.HEADING} style={{ 
-          marginBottom: '16px',
-          color: Colors.DARK_GRAY1
-        }}>Cell Styling</H5>
-        <ControlGroup fill={true} vertical={true} style={{ gap: '16px' }}>
+      <Card
+        className="bp4-elevation-2"
+        style={{
+          marginBottom: "16px",
+          backgroundColor: Colors.LIGHT_GRAY5,
+        }}
+      >
+        <H5
+          className={Classes.HEADING}
+          style={{
+            marginBottom: "16px",
+            color: Colors.DARK_GRAY1,
+          }}
+        >
+          Cell Styling
+        </H5>
+        <ControlGroup fill={true} vertical={true} style={{ gap: "16px" }}>
           {element.selectedCells.length > 0 && (
             <div>
               <Label className={Classes.TEXT_MUTED}>Cell Background</Label>
               <ControlGroup>
                 <ColorPicker
-                  value={element.selectedCells.length === 1
-                    ? element.cellBackgrounds?.[element.selectedCells[0]] || Colors.WHITE
-                    : Colors.WHITE}
+                  value={
+                    element.selectedCells.length === 1
+                      ? element.cellBackgrounds?.[element.selectedCells[0]] ||
+                        Colors.WHITE
+                      : Colors.WHITE
+                  }
                   onChange={(color) => {
                     const newBackgrounds = { ...element.cellBackgrounds };
                     element.selectedCells.forEach((cellKey: any) => {
@@ -275,7 +337,7 @@ const TableToolbar = observer(({ store }: { store: any }) => {
                 min={0}
                 max={20}
                 buttonPosition="none"
-                style={{ width: '60px' }}
+                style={{ width: "60px" }}
               />
             </ControlGroup>
           </div>
@@ -297,7 +359,7 @@ const TableToolbar = observer(({ store }: { store: any }) => {
                 min={0}
                 max={5}
                 buttonPosition="none"
-                style={{ width: '60px' }}
+                style={{ width: "60px" }}
               />
             </ControlGroup>
           </div>
@@ -316,14 +378,22 @@ const TableToolbar = observer(({ store }: { store: any }) => {
       </Card>
 
       {/* Text Formatting Controls */}
-      <Card className="bp4-elevation-2" style={{ 
-        backgroundColor: Colors.LIGHT_GRAY5
-      }}>
-        <H5 className={Classes.HEADING} style={{ 
-          marginBottom: '16px',
-          color: Colors.DARK_GRAY1
-        }}>Text Formatting</H5>
-        <ControlGroup fill={true} vertical={true} style={{ gap: '16px' }}>
+      <Card
+        className="bp4-elevation-2"
+        style={{
+          backgroundColor: Colors.LIGHT_GRAY5,
+        }}
+      >
+        <H5
+          className={Classes.HEADING}
+          style={{
+            marginBottom: "16px",
+            color: Colors.DARK_GRAY1,
+          }}
+        >
+          Text Formatting
+        </H5>
+        <ControlGroup fill={true} vertical={true} style={{ gap: "16px" }}>
           <div>
             <Label className={Classes.TEXT_MUTED}>Text Style</Label>
             <ButtonGroup>
@@ -388,20 +458,26 @@ const TableToolbar = observer(({ store }: { store: any }) => {
             <Label className={Classes.TEXT_MUTED}>Font Size</Label>
             <ControlGroup>
               <Slider
-                min={8}
-                max={40}
-                value={getFontSize()}
-                onChange={(value) => handleFontSizeChange(value)}
+                min={4}
+                max={22}
+                value={fontSize}
+                onChange={(value) => {
+                  setFontSize(value);
+                  handleFontSizeChange(value);
+                }}
                 labelRenderer={false}
                 className={Classes.FILL}
               />
               <NumericInput
-                value={getFontSize()}
-                onValueChange={(value) => handleFontSizeChange(value)}
-                min={8}
-                max={40}
+                value={fontSize}
+                onValueChange={(value) => {
+                  if (typeof value === "number") {
+                    setFontSize(value);
+                    handleFontSizeChange(value);
+                  }
+                }}
                 buttonPosition="none"
-                style={{ width: '60px' }}
+                style={{ width: "60px" }}
               />
             </ControlGroup>
           </div>
@@ -410,8 +486,19 @@ const TableToolbar = observer(({ store }: { store: any }) => {
             <Label className={Classes.TEXT_MUTED}>Text Color</Label>
             <ControlGroup>
               <ColorPicker
-                value={getTextColor()}
-                onChange={handleTextColorChange}
+                value={
+                  element.selectedCells.length === 1
+                    ? element.cellTextColors?.[element.selectedCells[0]] ||
+                      Colors.WHITE
+                    : Colors.WHITE
+                }
+                onChange={(color) => {
+                  const newCellTextColors = { ...element.cellTextColors };
+                  element.selectedCells.forEach((cellKey: any) => {
+                    newCellTextColors[cellKey] = color;
+                  });
+                  element.set({ cellTextColors: newCellTextColors });
+                }}
                 store={store}
               />
             </ControlGroup>
@@ -421,7 +508,5 @@ const TableToolbar = observer(({ store }: { store: any }) => {
     </div>
   );
 });
-
-export default TableToolbar;
 
 // unstable_registerToolbarComponent("table", TableToolbar);
